@@ -1,0 +1,11 @@
+<!--
+  This view is used to render the plugin list page.
+
+  We don't have any dynamic content, just show static HTML
+-->
+<div>
+  This plugin makes it possible to integrate data from <a href="http://www.appdynamics.com">AppDynamics</a> into your Jenkins build.<br/>
+  A performance test should be run during build time (e.g. by using <a href="http://jakarta.apache.org/jmeter/">JMeter</a>),
+  and having AppDynamics connected to your application. After the build, the
+  performance statistics will be fetched from the REST uri and shown in the Jenkins interface.
+</div>
