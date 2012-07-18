@@ -25,7 +25,7 @@ public class AppDynamicsProjectAction implements Action {
   }
 
   public String getDisplayName() {
-    return LocalMessages.getDisplayName();
+    return LocalMessages.getProjectActionDisplayName();
   }
 
   public String getUrlName() {

@@ -10,7 +10,12 @@ public class LocalMessages {
 
   private final static ResourceBundle messages = ResourceBundle.getBundle("Messages");
 
-  public static String getDisplayName() {
+  public static String getProjectActionDisplayName() {
     return messages.getString("AppDynamicsProjectAction.DisplayName");
   }
+
+  public static String getPublisherDisplayName() {
+    return messages.getString("AppDynamicsResultsPublisher.DisplayName");
+  }
+
 }
