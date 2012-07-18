@@ -6,16 +6,21 @@ import java.util.ResourceBundle;
  * Class provides access to the Messages {@link ResourceBundle} and hides initialization of the
  * properties file.
  */
-public class LocalMessages {
+public enum LocalMessages {
 
-  private final static ResourceBundle messages = ResourceBundle.getBundle("Messages");
+  PROJECTACTION_DISPLAYNAME("AppDynamicsProjectAction.DisplayName"),
+  PUBLISHER_DISPLAYNAME("AppDynamicsResultsPublisher.DisplayName");
 
-  public static String getProjectActionDisplayName() {
-    return messages.getString("AppDynamicsProjectAction.DisplayName");
+  private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages");
+  private final String msgRef;
+
+
+  private LocalMessages(final String msgReference) {
+    msgRef = msgReference;
   }
 
-  public static String getPublisherDisplayName() {
-    return messages.getString("AppDynamicsResultsPublisher.DisplayName");
+  @Override
+  public String toString() {
+    return MESSAGES.getString(msgRef);
   }
-
 }

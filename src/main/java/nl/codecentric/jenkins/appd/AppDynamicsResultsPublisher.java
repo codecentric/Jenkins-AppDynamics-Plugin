@@ -6,9 +6,10 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
-import nl.codecentric.jenkins.appd.util.LocalMessages;
 
 import java.util.List;
+
+import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNAME;
 
 /**
  * Main class for this Jenkins Plugin.
@@ -20,7 +21,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
     @Override
     public String getDisplayName() {
-      return LocalMessages.getPublisherDisplayName();
+      return PUBLISHER_DISPLAYNAME.toString();
     }
 
     @Override

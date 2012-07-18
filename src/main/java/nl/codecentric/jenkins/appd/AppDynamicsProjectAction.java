@@ -2,9 +2,10 @@ package nl.codecentric.jenkins.appd;
 
 import hudson.model.AbstractProject;
 import hudson.model.Action;
-import nl.codecentric.jenkins.appd.util.LocalMessages;
 
 import java.util.logging.Logger;
+
+import static nl.codecentric.jenkins.appd.util.LocalMessages.PROJECTACTION_DISPLAYNAME;
 
 /**
  * The {@link Action} that will be executed from your project and fetch the AppDynamics performance
@@ -25,7 +26,7 @@ public class AppDynamicsProjectAction implements Action {
   }
 
   public String getDisplayName() {
-    return LocalMessages.getProjectActionDisplayName();
+    return PROJECTACTION_DISPLAYNAME.toString();
   }
 
   public String getUrlName() {
