@@ -10,6 +10,7 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PROJECTACTION_DISPL
 /**
  * The {@link Action} that will be executed from your project and fetch the AppDynamics performance
  * data and display after a build.
+ * The Project Action will show the graph for overall performance from all builds.
  */
 public class AppDynamicsProjectAction implements Action {
 

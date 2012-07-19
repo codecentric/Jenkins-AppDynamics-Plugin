@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
-/** TODO update header from template */
+/**
+ * The {@link AppDynamicsDataCollector} will eventually fetch the performance statistics from the
+ * AppDynamics REST interface and parse them into a {@link AppDynamicsReport}.
+ */
 public class AppDynamicsDataCollector extends DataCollector {
 
   @Extension

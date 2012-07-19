@@ -1,0 +1,42 @@
+<j:jelly xmlns:j="jelly:core"
+         xmlns:f="/lib/form">
+
+  <f:entry title="${%appdynamics.rest.uri.title}" description="${%appdynamics.rest.uri.description}">
+    <f:textbox field="appdynamicsRestUri"/>
+  </f:entry>
+
+  <f:entry title="${%appdynamics.application.name.title}" description="${%appdynamics.application.name.description}">
+    <f:textbox field="applicationName"/>
+  </f:entry>
+
+  <f:entry title="${%performance.threshold.title}" description="${%performance.threshold.description}">
+    <table width="250px">
+      <thead>
+        <tr>
+          <td/>
+          <td colspan="2">
+            <img src="${rootURL}/images/16x16/yellow.gif" alt="100%"/>
+            ${%Unstable}
+          </td>
+          <td colspan="2">
+            <img src="${rootURL}/images/16x16/red.gif" alt="100%"/>
+            ${%Failed}
+          </td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="vertical-align:middle">${%Thresholds}:</td>
+          <td>
+            <f:textbox field="errorUnstableThreshold"/>
+          </td>
+          <td>%</td>
+          <td>
+            <f:textbox field="errorFailedThreshold"/>
+          </td>
+          <td>%</td>
+        </tr>
+      </tbody>
+    </table>
+  </f:entry>
+</j:jelly>

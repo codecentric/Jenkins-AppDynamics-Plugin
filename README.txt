@@ -8,3 +8,7 @@ See links below for more information:
 
 http://www.appdynamics.com
 http://www.jenkins-ci.org
+
+Many thanks to the developers of the Jenkins Performance plugin
+ <https://wiki.jenkins-ci.org/display/JENKINS/Performance+Plugin>,
+on which this plugins is largely based.
