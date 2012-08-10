@@ -11,13 +11,18 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.List;
 
 import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNAME;
 
 /**
- * Main class for this Jenkins Plugin.
- * Hooks into the build flow as post-build step, then collecting data and generating the report.
+ * Main class for this Jenkins Plugin.<br />
+ * Hooks into the build flow as post-build step, then collecting data and generating the report.<br /><br />
+ * <p/>
+ * Configuration is set from the Jenkins Build Configuration menu. When a build is triggered, the
+ * {@link AppDynamicsResultsPublisher#perform(hudson.model.AbstractBuild, hudson.Launcher, hudson.model.BuildListener)}
+ * method is called. This will then trigger the {@link AppDynamicsDataCollector} and parse any results and produces
+ * {@link AppDynamicsReport}'s.<br />
+ * A {@link AppDynamicsBuildAction} is used to store data per-build, so it can be compared later.
  */
 public class AppDynamicsResultsPublisher extends Recorder {
 
@@ -31,10 +36,6 @@ public class AppDynamicsResultsPublisher extends Recorder {
     @Override
     public String getHelpFile() {
       return "/plugin/appdynamics-dashboard/help.html";
-    }
-
-    public List<DataCollectorDescriptor> getParserDescriptors() {
-      return DataCollectorDescriptor.all();
     }
 
     @Override
@@ -73,12 +74,55 @@ public class AppDynamicsResultsPublisher extends Recorder {
                          BuildListener listener) throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
 
-    logger.println("AppDynamics-Dashboard: No threshold configured for making the test "
-        + Result.FAILURE.toString().toLowerCase());
+    if (errorUnstableThreshold >= 0 && errorUnstableThreshold <= 100) {
+      logger.println("Performance: Percentage of errors greater or equal than "
+          + errorUnstableThreshold + "% sets the build as "
+          + Result.UNSTABLE.toString().toLowerCase());
+    } else {
+      logger.println("Performance: No threshold configured for making the test "
+          + Result.UNSTABLE.toString().toLowerCase());
+    }
+    if (errorFailedThreshold >= 0 && errorFailedThreshold <= 100) {
+      logger.println("Performance: Percentage of errors greater or equal than "
+          + errorFailedThreshold + "% sets the build as "
+          + Result.FAILURE.toString().toLowerCase());
+    } else {
+      logger.println("Performance: No threshold configured for making the test "
+          + Result.FAILURE.toString().toLowerCase());
+    }
 
     // add the report to the build object.
-    AppDynamicsBuildAction a = new AppDynamicsBuildAction(build, logger);
+    AppDynamicsDataCollector collector = new AppDynamicsDataCollector(this.appdynamicsRestUri, this.applicationName);
+    AppDynamicsBuildAction a = new AppDynamicsBuildAction(build, logger, collector);
     build.addAction(a);
+
+    // TODO Make sure the host is reachable, otherwise directly fail the build.
+
+    // Kicking in the Data Collector
+    AppDynamicsReport report = collector.parse(build, listener);
+
+    // TODO Parse the reports and verify whether they were successful
+
+    // mark the build as unstable or failure depending on the outcome.
+    double thresholdTolerance = 0.00000001;
+
+    double errorPercent = 0.0; //r.errorPercent();
+    Result result = Result.SUCCESS;
+    if (errorFailedThreshold >= 0 && errorPercent - errorFailedThreshold > thresholdTolerance) {
+      result = Result.FAILURE;
+      build.setResult(Result.FAILURE);
+    } else if (errorUnstableThreshold >= 0
+        && errorPercent - errorUnstableThreshold > thresholdTolerance) {
+      result = Result.UNSTABLE;
+    }
+    if (result.isWorseThan(build.getResult())) {
+      build.setResult(result);
+    }
+//      logger.println("Performance: File " + r.getReportFileName()
+//          + " reported " + errorPercent
+//          + "% of errors [" + result + "]. Build status is: "
+//          + build.getResult());
+
 
     return true;
   }

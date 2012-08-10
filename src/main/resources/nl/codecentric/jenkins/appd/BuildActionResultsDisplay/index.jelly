@@ -1,0 +1,34 @@
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler"
+         xmlns:l="/lib/layout">
+  <l:layout title="overview-layout" xmlns:jm="/nl/codecentric/jenkins/appd/tags"
+            css="/plugin/performance/css/style.css">
+    <st:include it="${it.build}" page="sidepanel.jelly"/>
+    <l:main-panel>
+      <j:set var="report" value="${it.getAppDynamicsReport()}"/>
+      <h2>Performance Breakdown by URI: ${performanceReport.getReportFileName()}</h2>
+      <img class="trend"
+           src="./respondingTimeGraph?width=600&amp;height=225&amp;performanceReportPosition=${report.getReportFileName()}"
+           width="600" height="225"/>
+
+
+      <table class="sortable source" border="1">
+        <jm:captionLine/>
+        <tr class="${h.ifThenElse(report.failed,'red','')}">
+          <td class="left">
+            <a href="./uriReport/${uriReport.encodeUriReport()}">
+              <!--<st:out value="${uriReport.getShortUri()}" />-->
+              <st:out value="Get Working URI to Report"/>
+            </a>
+          </td>
+          <jm:summaryTable it="${report}"/>
+        </tr>
+
+
+        <tr class="bold">
+          <td class="left bold">All URIs</td>
+          <jm:summaryTable it="${report}"/>
+        </tr>
+      </table>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>

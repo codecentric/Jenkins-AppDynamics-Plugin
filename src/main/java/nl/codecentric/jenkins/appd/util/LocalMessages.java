@@ -9,7 +9,9 @@ import java.util.ResourceBundle;
 public enum LocalMessages {
 
   PROJECTACTION_DISPLAYNAME("AppDynamicsProjectAction.DisplayName"),
-  PUBLISHER_DISPLAYNAME("AppDynamicsResultsPublisher.DisplayName");
+  BUILDACTION_DISPLAYNAME("AppDynamicsBuildAction.DisplayName"),
+  PUBLISHER_DISPLAYNAME("AppDynamicsResultsPublisher.DisplayName"),
+  REPORT_DISPLAYNAME("AppDynamicsReport.DisplayName");
 
   private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages");
   private final String msgRef;

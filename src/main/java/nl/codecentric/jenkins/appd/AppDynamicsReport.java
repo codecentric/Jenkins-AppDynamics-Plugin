@@ -1,8 +1,14 @@
 package nl.codecentric.jenkins.appd;
 
+import hudson.model.AbstractBuild;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+
 /** Represents a single performance report */
 public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
   //extends AbstractReport
+  public final static String END_PERFORMANCE_PARAMETER = ".endperformanceparameter";
 
   private AppDynamicsBuildAction buildAction;
 
@@ -16,7 +22,7 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
     return -1;
   }
 
-//  public int countErrors() {
+  //  public int countErrors() {
 //    int nbError = 0;
 //    for (UriReport currentReport : uriReportMap.values()) {
 //      if (buildAction.getPerformanceReportMap().ifSummarizerParserUsed(reportFileName))  {
@@ -28,16 +34,18 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //    return nbError;
 //  }
 //
-//  public double errorPercent() {
+  public double errorPercent() {
 //    if (buildAction.getPerformanceReportMap().ifSummarizerParserUsed(reportFileName))  {
 //      return size() == 0 ? 0 : ((double) countErrors()) / size();
 //    } else {
 //      return size() == 0 ? 0 : ((double) countErrors()) / size() * 100;
 //    }
-//  }
-//
-//  public long getAverage() {
-//    long result = 0;
+    return 5.3;
+  }
+
+  //
+  public long getAverage() {
+    long result = 4700;
 //    int size = size();
 //    if (size != 0) {
 //      long average = 0;
@@ -47,9 +55,28 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //      double test = average / size;
 //      result = (int) test;
 //    }
-//    return result;
-//  }
-//
+    return result;
+  }
+
+  public long getMax() {
+    long max = Long.MIN_VALUE;
+//    for (UriReport currentReport : uriReportMap.values()) {
+//      max = Math.max(currentReport.getMax(), max);
+//    }
+    max = 83700;
+    return max;
+  }
+
+  public long getMin() {
+    long min = Long.MAX_VALUE;
+//    for (UriReport currentReport : uriReportMap.values()) {
+//      min = Math.min(currentReport.getMin(), min);
+//    }
+    min = 3480;
+    return min;
+  }
+
+  //
 //  public long get90Line() {
 //    long result = 0;
 //    int size = size();
@@ -84,13 +111,22 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //    return "";
 //  }
 //
-//  public AbstractBuild<?, ?> getBuild() {
-//    return buildAction.getBuild();
-//  }
-//
-//  PerformanceBuildAction getBuildAction() {
-//    return buildAction;
-//  }
+  public AbstractBuild<?, ?> getBuild() {
+    return buildAction.getBuild();
+  }
+
+  AppDynamicsBuildAction getBuildAction() {
+    return buildAction;
+  }
+
+  void setBuildAction(AppDynamicsBuildAction buildAction) {
+    this.buildAction = buildAction;
+  }
+
+  public void setLastBuildReport(AppDynamicsReport lastBuildReport) {
+    this.lastBuildReport = lastBuildReport;
+  }
+
 //
 //  public String getDisplayName() {
 //    return Messages.Report_DisplayName();
@@ -104,25 +140,28 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //    return httpSample;
 //  }
 //
-//  public long getMax() {
-//    long max = Long.MIN_VALUE;
-//    for (UriReport currentReport : uriReportMap.values()) {
-//      max = Math.max(currentReport.getMax(), max);
-//    }
-//    return max;
-//  }
-//
-//  public long getMin() {
-//    long min = Long.MAX_VALUE;
-//    for (UriReport currentReport : uriReportMap.values()) {
-//      min = Math.min(currentReport.getMin(), min);
-//    }
-//    return min;
-//  }
-//
-//  public String getReportFileName() {
-//    return reportFileName;
-//  }
+
+  public String getName() {
+    return "AD Response Time report";
+  }
+
+  public boolean isFailed() {
+    return false; // Was there some error??
+  }
+
+  public String encodeUriReport() throws UnsupportedEncodingException {
+    StringBuilder sb = new StringBuilder(120);
+    sb.append(getStaplerUri()).append(END_PERFORMANCE_PARAMETER);
+    return URLEncoder.encode(sb.toString(), "UTF-8");
+  }
+
+  public String getStaplerUri() {
+    String staplerUri = "http://some/uri/to/report".replace("http:", "").replaceAll("/", "_");
+
+    return staplerUri;
+  }
+
+
 //
 //  public List<UriReport> getUriListOrdered() {
 //    Collection<UriReport> uriCollection = getUriReportMap().values();
@@ -134,9 +173,6 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //    return uriReportMap;
 //  }
 //
-//  void setBuildAction(PerformanceBuildAction buildAction) {
-//    this.buildAction = buildAction;
-//  }
 //
 //  public void setHttpSample(HttpSample httpSample) {
 //    this.httpSample = httpSample;
@@ -154,17 +190,6 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //    return size;
 //  }
 //
-//  public void setLastBuildReport( PerformanceReport lastBuildReport ) {
-//    Map<String, UriReport> lastBuildUriReportMap = lastBuildReport.getUriReportMap();
-//    for (Map.Entry<String, UriReport> item : uriReportMap.entrySet()) {
-//      UriReport lastBuildUri = lastBuildUriReportMap.get( item.getKey() );
-//      if ( lastBuildUri != null ) {
-//        item.getValue().addLastBuildUriReport( lastBuildUri );
-//      } else {
-//      }
-//    }
-//    this.lastBuildReport = lastBuildReport;
-//  }
 
 
 //  public long getAverageDiff() {

@@ -1,0 +1,9 @@
+<j:jelly xmlns:j="jelly:core">
+
+  <tr>
+    <th>Average (ms)</th>
+    <th>Minimum (ms)</th>
+    <th>Maximum (ms)</th>
+    <th>Errors (%)</th>
+  </tr>
+</j:jelly>
