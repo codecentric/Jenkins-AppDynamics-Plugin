@@ -13,7 +13,7 @@ public enum LocalMessages {
   PUBLISHER_DISPLAYNAME("AppDynamicsResultsPublisher.DisplayName"),
   REPORT_DISPLAYNAME("AppDynamicsReport.DisplayName");
 
-  private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("Messages");
+  private final static ResourceBundle MESSAGES = ResourceBundle.getBundle("nl.codecentric.jenkins.appd.Messages");
   private final String msgRef;
 
 

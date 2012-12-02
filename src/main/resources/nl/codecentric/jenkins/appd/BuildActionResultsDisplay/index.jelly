@@ -5,7 +5,7 @@
     <st:include it="${it.build}" page="sidepanel.jelly"/>
     <l:main-panel>
       <j:set var="report" value="${it.getAppDynamicsReport()}"/>
-      <h2>Performance Breakdown by URI: ${performanceReport.getReportFileName()}</h2>
+      <h2>Performance Breakdown by URI: ${report.getName()}</h2>
       <img class="trend"
            src="./respondingTimeGraph?width=600&amp;height=225&amp;performanceReportPosition=${report.getReportFileName()}"
            width="600" height="225"/>

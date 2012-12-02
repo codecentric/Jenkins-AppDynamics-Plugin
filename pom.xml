@@ -81,6 +81,7 @@
   <properties>
     <!-- http://docs.codehaus.org/display/MAVENUSER/POM+Element+for+Source+File+Encoding -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <compileSource>1.6</compileSource>
     <compileTarget>1.6</compileTarget>
     <!-- define all plugin versions -->
     <maven.version>3.0.3</maven.version>
