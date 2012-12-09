@@ -102,7 +102,8 @@ public class BuildActionResultsDisplay implements ModelObject {
     return getAppDynamicsReport() == null;
   }
 
-  public void doRespondingTimeGraph(StaplerRequest request,
+    // TODO rename to correctly render graph
+  public void doRespondingTimeGraphStub(StaplerRequest request,
                                     StaplerResponse response) throws IOException {
     String parameter = request.getParameter("AppDynamicsReportPosition");
     AbstractBuild<?, ?> previousBuild = getBuild();
@@ -161,50 +162,54 @@ public class BuildActionResultsDisplay implements ModelObject {
    * TODO Seems like files are parsed again in this method.. Do we need this? Perhaps for previous builds?
    */
   private void parseReports(AbstractBuild<?, ?> build, TaskListener listener, AppDynamicsReportCollector collector, final String filename) throws IOException {
-    File repo = new File(build.getRootDir(),
-        BuildActionResultsDisplay.getAppDynamicsReportDirRelativePath());
+            AppDynamicsDataCollector p = buildAction.getCollector();
+              collector.add(p.parse(build, listener));
 
-    // files directly under the directory are for JMeter, for compatibility reasons.
-    File[] files = repo.listFiles(new FileFilter() {
 
-      public boolean accept(File f) {
-        return !f.isDirectory();
-      }
-    });
-    // this may fail, if the build itself failed, we need to recover gracefully
-//        if (files != null) {
-//            addAll(new JMeterParser("").parse(build,
-//                    Arrays.asList(files), listener));
+//    File repo = new File(build.getRootDir(),
+//        BuildActionResultsDisplay.getAppDynamicsReportDirRelativePath());
+//
+//    // files directly under the directory are for JMeter, for compatibility reasons.
+//    File[] files = repo.listFiles(new FileFilter() {
+//
+//      public boolean accept(File f) {
+//        return !f.isDirectory();
+//      }
+//    });
+//    // this may fail, if the build itself failed, we need to recover gracefully
+////        if (files != null) {
+////            addAll(new JMeterParser("").parse(build,
+////                    Arrays.asList(files), listener));
+////        }
+//
+//    // otherwise subdirectory name designates the parser ID.
+//    File[] dirs = repo.listFiles(new FileFilter() {
+//
+//      public boolean accept(File f) {
+//        return f.isDirectory();
+//      }
+//    });
+//    // this may fail, if the build itself failed, we need to recover gracefully
+//    if (dirs != null) {
+//      for (File dir : dirs) {
+//        AppDynamicsDataCollector p = buildAction.getCollector();
+//        if (p != null) {
+//          File[] listFiles = dir.listFiles(new FilenameFilter() {
+//
+//            public boolean accept(File dir, String name) {
+//              if (filename == null) {
+//                return true;
+//              }
+//              if (name.equals(filename)) {
+//                return true;
+//              }
+//              return false;
+//            }
+//          });
+//          collector.add(p.parse(build, listener));
 //        }
-
-    // otherwise subdirectory name designates the parser ID.
-    File[] dirs = repo.listFiles(new FileFilter() {
-
-      public boolean accept(File f) {
-        return f.isDirectory();
-      }
-    });
-    // this may fail, if the build itself failed, we need to recover gracefully
-    if (dirs != null) {
-      for (File dir : dirs) {
-        AppDynamicsDataCollector p = buildAction.getCollector();
-        if (p != null) {
-          File[] listFiles = dir.listFiles(new FilenameFilter() {
-
-            public boolean accept(File dir, String name) {
-              if (filename == null) {
-                return true;
-              }
-              if (name.equals(filename)) {
-                return true;
-              }
-              return false;
-            }
-          });
-          collector.add(p.parse(build, listener));
-        }
-      }
-    }
+//      }
+//    }
 
     addPreviousBuildReports();
   }
@@ -237,7 +242,7 @@ public class BuildActionResultsDisplay implements ModelObject {
     }
 
     AppDynamicsReport lastReport = previousBuildActionResults.getAppDynamicsReport();
-    getAppDynamicsReport().setLastBuildReport(lastReport);
+        getAppDynamicsReport().setLastBuildReport(lastReport);
   }
 
 

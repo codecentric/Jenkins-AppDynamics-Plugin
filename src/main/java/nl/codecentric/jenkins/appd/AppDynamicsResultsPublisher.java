@@ -28,6 +28,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
   @Extension
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
+
     @Override
     public String getDisplayName() {
       return PUBLISHER_DISPLAYNAME.toString();
@@ -44,7 +45,8 @@ public class AppDynamicsResultsPublisher extends Recorder {
     }
   }
 
-  /** Below fields are configured via the <code>config.jelly</code> page. */
+  public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
+    /** Below fields are configured via the <code>config.jelly</code> page. */
   private String appdynamicsRestUri = "";
   private String applicationName = "";
   private Integer errorFailedThreshold = 0;
@@ -57,6 +59,11 @@ public class AppDynamicsResultsPublisher extends Recorder {
     setApplicationName(applicationName);
     setErrorFailedThreshold(errorFailedThreshold);
     setErrorUnstableThreshold(errorUnstableThreshold);
+  }
+
+  @Override
+  public BuildStepDescriptor<Publisher> getDescriptor() {
+      return DESCRIPTOR;
   }
 
   @Override

@@ -48,7 +48,7 @@ public class AppDynamicsDataCollector implements Describable<AppDynamicsDataColl
   /** Parses the specified reports into {@link AppDynamicsReport}s. */
   public AppDynamicsReport parse(AbstractBuild<?, ?> build, TaskListener listener) throws IOException {
     // TODO implement
-    return null;
+    return new AppDynamicsReport();
   }
 
   public Boolean isRestHostReachable() {
