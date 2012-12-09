@@ -8,12 +8,15 @@
         <a href="../lastBuild/performance/">${%last.report.caption}</a>
       </div>
       <div>
+        <j:forEach var="performanceReport" items="${it.performanceReportList}">
+
         <div class="title">
           <h1>
             <center>${%Test file}: ${performanceReport}</center>
           </h1>
         </div>
         <center>
+          <!--
           <a href="./respondingTimeGraph?width=900&amp;height=550&amp;performanceReportPosition=${performanceReport}"
              title="${%Click for larger image}">
             <img class="trend"
@@ -26,7 +29,9 @@
                  src="./errorsGraph?width=300&amp;height=225&amp;performanceReportPosition=${performanceReport}"
                  width="300" height="225"/>
           </a>
+          -->
         </center>
+        </j:forEach>
       </div>
     </l:main-panel>
   </l:layout>
