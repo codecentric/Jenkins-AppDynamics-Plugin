@@ -35,7 +35,7 @@ public class AppDynamicsDataCollector implements Describable<AppDynamicsDataColl
   private String applicationName;
 
   @DataBoundConstructor
-  public AppDynamicsDataCollector(final String appdynamicsRestUri, final String applicationName) {
+  public AppDynamicsDataCollector(final String appdynamicsRestUri, final String applicationName, Integer measurementInterval, long duration) {
     setParsedRestUri(appdynamicsRestUri);
     setApplicationName(applicationName);
   }

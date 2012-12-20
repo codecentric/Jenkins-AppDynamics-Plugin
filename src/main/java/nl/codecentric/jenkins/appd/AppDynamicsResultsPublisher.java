@@ -43,20 +43,35 @@ public class AppDynamicsResultsPublisher extends Recorder {
     public boolean isApplicable(Class<? extends AbstractProject> jobType) {
       return true;
     }
+
+    public int getDefaultMeasurementInterval() {
+        return 5;
+    }
+
+    public int getDefaultUnstableThreshold() {
+        return 70;
+    }
+
+    public int getDefaultFailedThreshold() {
+        return 90;
+    }
   }
 
   public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
     /** Below fields are configured via the <code>config.jelly</code> page. */
   private String appdynamicsRestUri = "";
   private String applicationName = "";
-  private Integer errorFailedThreshold = 0;
-  private Integer errorUnstableThreshold = 0;
+  private Integer measurementInterval;
+  private Integer errorFailedThreshold;
+  private Integer errorUnstableThreshold;
 
   @DataBoundConstructor
   public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String applicationName,
-                                     int errorFailedThreshold, int errorUnstableThreshold) {
+                                     final Integer measurementInterval, final Integer errorFailedThreshold,
+                                     final Integer errorUnstableThreshold) {
     setAppdynamicsRestUri(appdynamicsRestUri);
     setApplicationName(applicationName);
+    setMeasurementInterval(measurementInterval);
     setErrorFailedThreshold(errorFailedThreshold);
     setErrorUnstableThreshold(errorUnstableThreshold);
   }
@@ -99,7 +114,8 @@ public class AppDynamicsResultsPublisher extends Recorder {
     }
 
     // add the report to the build object.
-    AppDynamicsDataCollector collector = new AppDynamicsDataCollector(this.appdynamicsRestUri, this.applicationName);
+    AppDynamicsDataCollector collector = new AppDynamicsDataCollector(this.appdynamicsRestUri, this.applicationName,
+            this.measurementInterval, build.getDuration());
     AppDynamicsBuildAction a = new AppDynamicsBuildAction(build, logger, collector);
     build.addAction(a);
 
@@ -157,20 +173,27 @@ public class AppDynamicsResultsPublisher extends Recorder {
     this.applicationName = applicationName;
   }
 
-  public int getErrorFailedThreshold() {
+  public Integer getMeasurementInterval() {
+    return measurementInterval;
+  }
+
+  public void setMeasurementInterval(final Integer measurementInterval) {
+    this.measurementInterval = Math.max(1, Math.min(measurementInterval, 10));
+  }
+
+  public Integer getErrorFailedThreshold() {
     return errorFailedThreshold;
   }
 
-  public void setErrorFailedThreshold(int errorFailedThreshold) {
+  public void setErrorFailedThreshold(final Integer errorFailedThreshold) {
     this.errorFailedThreshold = Math.max(0, Math.min(errorFailedThreshold, 100));
   }
 
-  public int getErrorUnstableThreshold() {
+  public Integer getErrorUnstableThreshold() {
     return errorUnstableThreshold;
   }
 
-  public void setErrorUnstableThreshold(int errorUnstableThreshold) {
-    this.errorUnstableThreshold = Math.max(0, Math.min(errorUnstableThreshold,
-        100));
+  public void setErrorUnstableThreshold(final Integer errorUnstableThreshold) {
+    this.errorUnstableThreshold = Math.max(0, Math.min(errorUnstableThreshold, 100));
   }
 }
