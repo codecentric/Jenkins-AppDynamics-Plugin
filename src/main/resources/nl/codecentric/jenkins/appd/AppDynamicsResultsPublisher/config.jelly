@@ -5,9 +5,21 @@
     <f:textbox field="appdynamicsRestUri" />
   </f:entry>
 
+  <f:entry title="${%appdynamics.rest.username.title}" description="${%appdynamics.rest.username.description}">
+    <f:textbox field="username" />
+  </f:entry>
+
+  <f:entry title="${%appdynamics.rest.password.title}" description="${%appdynamics.rest.password.description}">
+    <f:textbox field="password" />
+  </f:entry>
+
   <f:entry title="${%appdynamics.application.name.title}" description="${%appdynamics.application.name.description}">
     <f:textbox field="applicationName" />
   </f:entry>
+
+  <f:validateButton
+      title="${%appdynamics.connection.test.title}" progress="${%appdynamics.connection.test.progress}"
+      method="testAppDynamicsConnection" with="appdynamicsRestUri,applicationName" />
 
   <f:entry title="${%performance.measurement.interval.title}" description="${%performance.measurement.interval.description}">
     <f:number field="measurementInterval" default="${descriptor.defaultMeasurementInterval}" min="1" max="10" step="1" />

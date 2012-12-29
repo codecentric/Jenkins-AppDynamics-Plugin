@@ -7,8 +7,12 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
+import hudson.util.FormValidation;
+import nl.codecentric.jenkins.appd.rest.RestConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
+import org.kohsuke.stapler.QueryParameter;
 
+import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
 
@@ -25,6 +29,10 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNA
  * A {@link AppDynamicsBuildAction} is used to store data per-build, so it can be compared later.
  */
 public class AppDynamicsResultsPublisher extends Recorder {
+
+  private static final int DEFAULT_MEASUREMENT_INTERVAL = 5;
+  private static final int DEFAULT_THRESHOLD_UNSTABLE = 70;
+  private static final int DEFAULT_THRESHOLD_FAILED = 90;
 
   @Extension
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
@@ -45,31 +53,101 @@ public class AppDynamicsResultsPublisher extends Recorder {
     }
 
     public int getDefaultMeasurementInterval() {
-        return 5;
+        return DEFAULT_MEASUREMENT_INTERVAL;
     }
 
     public int getDefaultUnstableThreshold() {
-        return 70;
+        return DEFAULT_THRESHOLD_UNSTABLE;
     }
 
     public int getDefaultFailedThreshold() {
-        return 90;
+        return DEFAULT_THRESHOLD_FAILED;
+    }
+
+    public FormValidation doCheckAppdynamicsRestUri(@QueryParameter final String appdynamicsRestUri) {
+      FormValidation validationResult;
+
+      if (RestConnection.validateRestUri(appdynamicsRestUri)) {
+        validationResult = FormValidation.ok();
+      } else {
+        validationResult = FormValidation.error("AppDynamics REST uri is not valid, cannot be empty and has to " +
+            "start with 'http://' or 'https://'");
+      }
+
+      return validationResult;
+    }
+
+    public FormValidation doCheckUsername(@QueryParameter final String username) {
+      FormValidation validationResult;
+
+      if (RestConnection.validateUsername(username)) {
+        validationResult = FormValidation.ok();
+      } else {
+        validationResult = FormValidation.error("Username for REST interface cannot be empty");
+      }
+
+      return validationResult;
+    }
+
+    public FormValidation doCheckPassword(@QueryParameter final String password) {
+      FormValidation validationResult;
+
+      if (RestConnection.validatePassword(password)) {
+        validationResult = FormValidation.ok();
+      } else {
+        validationResult = FormValidation.error("Password for REST interface cannot be empty");
+      }
+
+      return validationResult;
+    }
+
+    public FormValidation doCheckApplicationName(@QueryParameter final String applicationName) {
+      FormValidation validationResult;
+
+      if (RestConnection.validateApplicationName(applicationName)) {
+        validationResult = FormValidation.ok();
+      } else {
+        validationResult = FormValidation.error("AppDynamics application name cannot be empty");
+      }
+
+      return validationResult;
+    }
+
+    public FormValidation doTestAppDynamicsConnection(@QueryParameter("appdynamicsRestUri") final String appdynamicsRestUri,
+                                                      @QueryParameter("username") final String username,
+                                                      @QueryParameter("password") final String password,
+                                                      @QueryParameter("applicationName") final String applicationName) {
+      FormValidation validationResult;
+      RestConnection connection = new RestConnection(appdynamicsRestUri, username, password, applicationName);
+
+      if (connection.validateConnection()) {
+        validationResult = FormValidation.ok("Connection successful");
+      } else {
+        validationResult = FormValidation.warning("Connection with AppDynamics RESTful interface could not be established");
+      }
+
+      return validationResult;
     }
   }
 
   public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
     /** Below fields are configured via the <code>config.jelly</code> page. */
   private String appdynamicsRestUri = "";
+  private String username = "";
+  private String password = "";
   private String applicationName = "";
   private Integer measurementInterval;
   private Integer errorFailedThreshold;
   private Integer errorUnstableThreshold;
 
   @DataBoundConstructor
-  public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String applicationName,
+  public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String username,
+                                     final String password, final String applicationName,
                                      final Integer measurementInterval, final Integer errorFailedThreshold,
                                      final Integer errorUnstableThreshold) {
     setAppdynamicsRestUri(appdynamicsRestUri);
+    setUsername(username);
+    setPassword(password);
     setApplicationName(applicationName);
     setMeasurementInterval(measurementInterval);
     setErrorFailedThreshold(errorFailedThreshold);
@@ -87,13 +165,14 @@ public class AppDynamicsResultsPublisher extends Recorder {
   }
 
   public BuildStepMonitor getRequiredMonitorService() {
-    return BuildStepMonitor.BUILD;
+    // No synchronization necessary between builds
+    return BuildStepMonitor.NONE;
   }
 
 
   @Override
-  public boolean perform(AbstractBuild<?, ?> build, Launcher launcher,
-                         BuildListener listener) throws InterruptedException, IOException {
+  public boolean perform(AbstractBuild<?, ?> build, Launcher launcher, BuildListener listener)
+      throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
 
     if (errorUnstableThreshold >= 0 && errorUnstableThreshold <= 100) {
@@ -154,22 +233,31 @@ public class AppDynamicsResultsPublisher extends Recorder {
     return appdynamicsRestUri;
   }
 
-  public void setAppdynamicsRestUri(String appdynamicsRestUri) {
-    if (appdynamicsRestUri == null || appdynamicsRestUri.length() == 0) {
-      throw new IllegalArgumentException("REST uri for AppDynamics Controller cannot be empty");
-    }
-    // TODO later expand with more checks, such as 'http://' and end with '/rest/'
+  public void setAppdynamicsRestUri(final String appdynamicsRestUri) {
     this.appdynamicsRestUri = appdynamicsRestUri;
+  }
+
+  public String getUsername() {
+    return username;
+  }
+
+  public void setUsername(final String username) {
+    this.username = username;
+  }
+
+  public String getPassword() {
+    return password;
+  }
+
+  public void setPassword(final String password) {
+    this.password = password;
   }
 
   public String getApplicationName() {
     return applicationName;
   }
 
-  public void setApplicationName(String applicationName) {
-    if (applicationName == null || applicationName.length() == 0) {
-      throw new IllegalArgumentException("Application Name cannot be empty");
-    }
+  public void setApplicationName(final String applicationName) {
     this.applicationName = applicationName;
   }
 
