@@ -30,11 +30,11 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNA
  */
 public class AppDynamicsResultsPublisher extends Recorder {
 
+  private static final String DEFAULT_USERNAME = "username@customer1";
   private static final int DEFAULT_MEASUREMENT_INTERVAL = 5;
   private static final int DEFAULT_THRESHOLD_UNSTABLE = 70;
   private static final int DEFAULT_THRESHOLD_FAILED = 90;
 
-  @Extension
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
     @Override
@@ -50,6 +50,10 @@ public class AppDynamicsResultsPublisher extends Recorder {
     @Override
     public boolean isApplicable(Class<? extends AbstractProject> jobType) {
       return true;
+    }
+
+    public String getDefaultUsername() {
+      return DEFAULT_USERNAME;
     }
 
     public int getDefaultMeasurementInterval() {
@@ -130,8 +134,11 @@ public class AppDynamicsResultsPublisher extends Recorder {
     }
   }
 
+  @Extension
   public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
-    /** Below fields are configured via the <code>config.jelly</code> page. */
+
+  private RestConnection connection;
+  /** Below fields are configured via the <code>config.jelly</code> page. */
   private String appdynamicsRestUri = "";
   private String username = "";
   private String password = "";

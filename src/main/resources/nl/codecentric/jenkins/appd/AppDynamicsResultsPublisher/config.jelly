@@ -6,7 +6,7 @@
   </f:entry>
 
   <f:entry title="${%appdynamics.rest.username.title}" description="${%appdynamics.rest.username.description}">
-    <f:textbox field="username" />
+    <f:textbox field="username" default="${descriptor.defaultUsername}" />
   </f:entry>
 
   <f:entry title="${%appdynamics.rest.password.title}" description="${%appdynamics.rest.password.description}">
@@ -19,7 +19,7 @@
 
   <f:validateButton
       title="${%appdynamics.connection.test.title}" progress="${%appdynamics.connection.test.progress}"
-      method="testAppDynamicsConnection" with="appdynamicsRestUri,applicationName" />
+      method="testAppDynamicsConnection" with="appdynamicsRestUri,username,password,applicationName" />
 
   <f:entry title="${%performance.measurement.interval.title}" description="${%performance.measurement.interval.description}">
     <f:number field="measurementInterval" default="${descriptor.defaultMeasurementInterval}" min="1" max="10" step="1" />
