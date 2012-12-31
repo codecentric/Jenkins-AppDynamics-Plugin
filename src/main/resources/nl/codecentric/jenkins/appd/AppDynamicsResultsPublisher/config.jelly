@@ -21,10 +21,6 @@
       title="${%appdynamics.connection.test.title}" progress="${%appdynamics.connection.test.progress}"
       method="testAppDynamicsConnection" with="appdynamicsRestUri,username,password,applicationName" />
 
-  <f:entry title="${%performance.measurement.interval.title}" description="${%performance.measurement.interval.description}">
-    <f:number field="measurementInterval" default="${descriptor.defaultMeasurementInterval}" min="1" max="10" step="1" />
-  </f:entry>
-
   <f:entry title="${%performance.threshold.title}" description="${%performance.threshold.description}">
     <table width="250px">
       <thead>

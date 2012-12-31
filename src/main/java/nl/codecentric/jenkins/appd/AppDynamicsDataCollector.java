@@ -32,14 +32,11 @@ public class AppDynamicsDataCollector implements Describable<AppDynamicsDataColl
 
   private final RestConnection restConnection;
   private final AbstractBuild<?, ?> build;
-  private final Integer measurementInterval;
 
   @DataBoundConstructor
-  public AppDynamicsDataCollector(final RestConnection connection, final AbstractBuild<?, ?> build,
-                                  final Integer measurementInterval) {
+  public AppDynamicsDataCollector(final RestConnection connection, final AbstractBuild<?, ?> build) {
     this.restConnection = connection;
     this.build = build;
-    this.measurementInterval = measurementInterval;
   }
 
   public DataCollectorDescriptor getDescriptor() {

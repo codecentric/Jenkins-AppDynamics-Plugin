@@ -31,7 +31,6 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNA
 public class AppDynamicsResultsPublisher extends Recorder {
 
   private static final String DEFAULT_USERNAME = "username@customer1";
-  private static final int DEFAULT_MEASUREMENT_INTERVAL = 5;
   private static final int DEFAULT_THRESHOLD_UNSTABLE = 70;
   private static final int DEFAULT_THRESHOLD_FAILED = 90;
 
@@ -54,10 +53,6 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
     public String getDefaultUsername() {
       return DEFAULT_USERNAME;
-    }
-
-    public int getDefaultMeasurementInterval() {
-        return DEFAULT_MEASUREMENT_INTERVAL;
     }
 
     public int getDefaultUnstableThreshold() {
@@ -143,20 +138,17 @@ public class AppDynamicsResultsPublisher extends Recorder {
   private String username = "";
   private String password = "";
   private String applicationName = "";
-  private Integer measurementInterval;
   private Integer errorFailedThreshold;
   private Integer errorUnstableThreshold;
 
   @DataBoundConstructor
   public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String username,
                                      final String password, final String applicationName,
-                                     final Integer measurementInterval, final Integer errorFailedThreshold,
-                                     final Integer errorUnstableThreshold) {
+                                     final Integer errorFailedThreshold, final Integer errorUnstableThreshold) {
     setAppdynamicsRestUri(appdynamicsRestUri);
     setUsername(username);
     setPassword(password);
     setApplicationName(applicationName);
-    setMeasurementInterval(measurementInterval);
     setErrorFailedThreshold(errorFailedThreshold);
     setErrorUnstableThreshold(errorUnstableThreshold);
   }
@@ -193,7 +185,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
     logger.println("Connection successful, continue to fetch measurements from AppDynamics Controller ...");
 
     // add the report to the build object.
-    AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build, measurementInterval);
+    AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build);
     AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, logger, dataCollector);
     build.addAction(buildAction);
 
@@ -277,14 +269,6 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
   public void setApplicationName(final String applicationName) {
     this.applicationName = applicationName;
-  }
-
-  public Integer getMeasurementInterval() {
-    return measurementInterval;
-  }
-
-  public void setMeasurementInterval(final Integer measurementInterval) {
-    this.measurementInterval = Math.max(1, Math.min(measurementInterval, 10));
   }
 
   public Integer getErrorFailedThreshold() {
