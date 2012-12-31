@@ -10,7 +10,7 @@
   </f:entry>
 
   <f:entry title="${%appdynamics.rest.password.title}" description="${%appdynamics.rest.password.description}">
-    <f:textbox field="password" />
+    <f:password field="password" />
   </f:entry>
 
   <f:entry title="${%appdynamics.application.name.title}" description="${%appdynamics.application.name.description}">

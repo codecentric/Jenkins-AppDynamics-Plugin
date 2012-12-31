@@ -159,11 +159,13 @@ public class BuildActionResultsDisplay implements ModelObject {
 
 
   /*
-   * TODO Seems like files are parsed again in this method.. Do we need this? Perhaps for previous builds?
+   *
    */
   private void parseReports(AbstractBuild<?, ?> build, TaskListener listener, AppDynamicsReportCollector collector, final String filename) throws IOException {
             AppDynamicsDataCollector p = buildAction.getCollector();
-              collector.add(p.parse(build, listener));
+    // Get the data (again) to show the results actually in a table / graph
+    // TODO: find some way to not fetch the same data twice from the REST interface but re-use the report.
+              collector.add(p.createReportFromMeasurements());
 
 
 //    File repo = new File(build.getRootDir(),

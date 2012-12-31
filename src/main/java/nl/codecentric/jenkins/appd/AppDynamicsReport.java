@@ -1,12 +1,22 @@
 package nl.codecentric.jenkins.appd;
 
 import hudson.model.AbstractBuild;
+import nl.codecentric.jenkins.appd.rest.types.MetricValues;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.List;
 
 /** Represents a single performance report */
 public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
+
+  private final List<MetricValues> averageResponseTimeMetrics;
+
+  public AppDynamicsReport(final List<MetricValues> averageResponseTimeMetrics) {
+    this.averageResponseTimeMetrics = averageResponseTimeMetrics;
+  }
+
+
   //extends AbstractReport
   public final static String END_PERFORMANCE_PARAMETER = ".endperformanceparameter";
 
@@ -45,7 +55,13 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 
   //
   public long getAverage() {
-    long result = 4700;
+
+    long totalAverage = 0;
+    for (MetricValues value : this.averageResponseTimeMetrics) {
+      totalAverage += value.getCurrent();
+    }
+
+    long result = totalAverage / this.averageResponseTimeMetrics.size();
 //    int size = size();
 //    if (size != 0) {
 //      long average = 0;

@@ -182,6 +182,29 @@ public class AppDynamicsResultsPublisher extends Recorder {
       throws InterruptedException, IOException {
     PrintStream logger = listener.getLogger();
 
+    RestConnection connection = new RestConnection(appdynamicsRestUri, username, password, applicationName);
+    logger.println("Verify connection to AppDynamics REST interface ...");
+    if (!connection.validateConnection()) {
+      logger.println("Connection to AppDynamics REST interface unsuccessful, cannot proceed with this build step");
+      build.setResult(Result.FAILURE);
+      return true;
+    }
+
+    logger.println("Connection successful, continue to fetch measurements from AppDynamics Controller ...");
+
+    // add the report to the build object.
+    AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build, measurementInterval);
+    AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, logger, dataCollector);
+    build.addAction(buildAction);
+
+
+    // Kicking in the Data Collector
+    AppDynamicsReport report = dataCollector.createReportFromMeasurements();
+
+    // TODO Parse the reports and verify whether they were successful
+
+
+
     if (errorUnstableThreshold >= 0 && errorUnstableThreshold <= 100) {
       logger.println("Performance: Percentage of errors greater or equal than "
           + errorUnstableThreshold + "% sets the build as "
@@ -199,18 +222,6 @@ public class AppDynamicsResultsPublisher extends Recorder {
           + Result.FAILURE.toString().toLowerCase());
     }
 
-    // add the report to the build object.
-    AppDynamicsDataCollector collector = new AppDynamicsDataCollector(this.appdynamicsRestUri, this.applicationName,
-            this.measurementInterval, build.getDuration());
-    AppDynamicsBuildAction a = new AppDynamicsBuildAction(build, logger, collector);
-    build.addAction(a);
-
-    // TODO Make sure the host is reachable, otherwise directly fail the build.
-
-    // Kicking in the Data Collector
-    AppDynamicsReport report = collector.parse(build, listener);
-
-    // TODO Parse the reports and verify whether they were successful
 
     // mark the build as unstable or failure depending on the outcome.
     double thresholdTolerance = 0.00000001;
