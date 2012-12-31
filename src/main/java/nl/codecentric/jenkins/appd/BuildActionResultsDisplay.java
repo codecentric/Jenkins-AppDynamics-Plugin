@@ -162,10 +162,10 @@ public class BuildActionResultsDisplay implements ModelObject {
    *
    */
   private void parseReports(AbstractBuild<?, ?> build, TaskListener listener, AppDynamicsReportCollector collector, final String filename) throws IOException {
-            AppDynamicsDataCollector p = buildAction.getCollector();
+            AppDynamicsReport pregenReport = buildAction.getReport();
     // Get the data (again) to show the results actually in a table / graph
     // TODO: find some way to not fetch the same data twice from the REST interface but re-use the report.
-              collector.add(p.createReportFromMeasurements());
+              collector.add(pregenReport);
 
 
 //    File repo = new File(build.getRootDir(),

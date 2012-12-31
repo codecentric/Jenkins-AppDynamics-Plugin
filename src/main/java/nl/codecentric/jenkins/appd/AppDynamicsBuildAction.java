@@ -22,16 +22,16 @@ import java.util.logging.Logger;
 public class AppDynamicsBuildAction implements Action, StaplerProxy {
 
   private final AbstractBuild<?, ?> build;
-  private final AppDynamicsDataCollector collector;
+  private final AppDynamicsReport report;
   private transient final PrintStream hudsonConsoleWriter;
   private transient WeakReference<BuildActionResultsDisplay> buildActionResultsDisplay;
 
   private transient static final Logger logger = Logger.getLogger(AppDynamicsBuildAction.class.getName());
 
-  public AppDynamicsBuildAction(AbstractBuild<?, ?> pBuild, PrintStream logger, AppDynamicsDataCollector pCollector) {
+  public AppDynamicsBuildAction(AbstractBuild<?, ?> pBuild, PrintStream logger, AppDynamicsReport report) {
     build = pBuild;
     hudsonConsoleWriter = logger;
-    collector = pCollector;
+    this.report = report;
   }
 
   public String getIconFileName() {
@@ -50,8 +50,8 @@ public class AppDynamicsBuildAction implements Action, StaplerProxy {
     return build;
   }
 
-  public AppDynamicsDataCollector getCollector() {
-    return collector;
+  public AppDynamicsReport getReport() {
+    return report;
   }
 
   public BuildActionResultsDisplay getTarget() {

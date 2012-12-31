@@ -14,33 +14,14 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * Perhaps create separate Collectors again when this is more logical to create separate graphs. For
  * now this single collector should get all data.
  */
-public class AppDynamicsDataCollector implements Describable<AppDynamicsDataCollector>, ExtensionPoint {
-
-  @Extension
-  public static class DataCollectorDescriptor extends Descriptor<AppDynamicsDataCollector> {
-    @Override
-    public String getDisplayName() {
-      return "AppDynamics Data Collector";
-    }
-
-    /** Internal unique ID that distinguishes a parser. */
-    @Override
-    public final String getId() {
-      return getClass().getName();
-    }
-  }
+public class AppDynamicsDataCollector {
 
   private final RestConnection restConnection;
   private final AbstractBuild<?, ?> build;
 
-  @DataBoundConstructor
   public AppDynamicsDataCollector(final RestConnection connection, final AbstractBuild<?, ?> build) {
     this.restConnection = connection;
     this.build = build;
-  }
-
-  public DataCollectorDescriptor getDescriptor() {
-    return (DataCollectorDescriptor) Hudson.getInstance().getDescriptorOrDie(getClass());
   }
 
   /** Parses the specified reports into {@link AppDynamicsReport}s. */

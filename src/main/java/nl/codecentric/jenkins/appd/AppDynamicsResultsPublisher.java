@@ -186,12 +186,13 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
     // add the report to the build object.
     AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build);
-    AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, logger, dataCollector);
+    // Kicking in the Data Collector
+    AppDynamicsReport report = dataCollector.createReportFromMeasurements();
+
+    AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, logger, report);
     build.addAction(buildAction);
 
 
-    // Kicking in the Data Collector
-    AppDynamicsReport report = dataCollector.createReportFromMeasurements();
 
     // TODO Parse the reports and verify whether they were successful
 
