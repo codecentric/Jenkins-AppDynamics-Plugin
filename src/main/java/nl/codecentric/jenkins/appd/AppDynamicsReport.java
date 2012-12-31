@@ -165,47 +165,6 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
     return false; // Was there some error??
   }
 
-  public String encodeUriReport() throws UnsupportedEncodingException {
-    StringBuilder sb = new StringBuilder(120);
-    sb.append(getStaplerUri()).append(END_PERFORMANCE_PARAMETER);
-    return URLEncoder.encode(sb.toString(), "UTF-8");
-  }
-
-  public String getStaplerUri() {
-    String staplerUri = "http://some/uri/to/report".replace("http:", "").replaceAll("/", "_");
-
-    return staplerUri;
-  }
-
-
-//
-//  public List<UriReport> getUriListOrdered() {
-//    Collection<UriReport> uriCollection = getUriReportMap().values();
-//    List<UriReport> UriReportList = new ArrayList<UriReport>(uriCollection);
-//    return UriReportList;
-//  }
-//
-//  public Map<String, UriReport> getUriReportMap() {
-//    return uriReportMap;
-//  }
-//
-//
-//  public void setHttpSample(HttpSample httpSample) {
-//    this.httpSample = httpSample;
-//  }
-//
-//  public void setReportFileName(String reportFileName) {
-//    this.reportFileName = reportFileName;
-//  }
-//
-//  public int size() {
-//    int size = 0;
-//    for (UriReport currentReport : uriReportMap.values()) {
-//      size += currentReport.size();
-//    }
-//    return size;
-//  }
-//
 
 
 //  public long getAverageDiff() {

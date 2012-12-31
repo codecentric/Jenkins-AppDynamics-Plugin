@@ -189,7 +189,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
     // Kicking in the Data Collector
     AppDynamicsReport report = dataCollector.createReportFromMeasurements();
 
-    AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, logger, report);
+    AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, report);
     build.addAction(buildAction);
 
 

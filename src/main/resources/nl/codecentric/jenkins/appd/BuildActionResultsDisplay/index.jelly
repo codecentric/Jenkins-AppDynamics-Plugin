@@ -11,20 +11,9 @@
       <table class="sortable source" border="1">
         <jm:captionLine/>
         <tr class="${h.ifThenElse(report.failed,'red','')}">
-          <td class="left">
-            <a href="./uriReport/${report.encodeUriReport()}">
-              <!--<st:out value="${uriReport.getShortUri()}" />-->
-              <st:out value="Get Working URI to Report"/>
-            </a>
-          </td>
           <jm:summaryTable it="${report}"/>
         </tr>
 
-
-        <tr class="bold">
-          <td class="left bold">All URIs</td>
-          <jm:summaryTable it="${report}"/>
-        </tr>
       </table>
     </l:main-panel>
   </l:layout>

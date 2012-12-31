@@ -23,14 +23,12 @@ public class AppDynamicsBuildAction implements Action, StaplerProxy {
 
   private final AbstractBuild<?, ?> build;
   private final AppDynamicsReport report;
-  private transient final PrintStream hudsonConsoleWriter;
   private transient WeakReference<BuildActionResultsDisplay> buildActionResultsDisplay;
 
   private transient static final Logger logger = Logger.getLogger(AppDynamicsBuildAction.class.getName());
 
-  public AppDynamicsBuildAction(AbstractBuild<?, ?> pBuild, PrintStream logger, AppDynamicsReport report) {
-    build = pBuild;
-    hudsonConsoleWriter = logger;
+  public AppDynamicsBuildAction(AbstractBuild<?, ?> build, AppDynamicsReport report) {
+    this.build = build;
     this.report = report;
   }
 
@@ -46,16 +44,16 @@ public class AppDynamicsBuildAction implements Action, StaplerProxy {
     return "appdynamics-dashboard";
   }
 
+  public BuildActionResultsDisplay getTarget() {
+    return getBuildActionResultsDisplay();
+  }
+
   public AbstractBuild<?, ?> getBuild() {
     return build;
   }
 
-  public AppDynamicsReport getReport() {
+  public AppDynamicsReport getAppDynamicsReport() {
     return report;
-  }
-
-  public BuildActionResultsDisplay getTarget() {
-    return getBuildActionResultsDisplay();
   }
 
   public BuildActionResultsDisplay getBuildActionResultsDisplay() {
