@@ -7,6 +7,8 @@ import nl.codecentric.jenkins.appd.rest.types.MetricData;
 import nl.codecentric.jenkins.appd.rest.RestConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
 
+import java.util.logging.Logger;
+
 /**
  * The {@link AppDynamicsDataCollector} will eventually fetch the performance statistics from the
  * AppDynamics REST interface and parse them into a {@link AppDynamicsReport}.<br />
@@ -15,6 +17,16 @@ import org.kohsuke.stapler.DataBoundConstructor;
  * now this single collector should get all data.
  */
 public class AppDynamicsDataCollector {
+  private static final Logger LOG = Logger.getLogger(AppDynamicsDataCollector.class.getName());
+  private static final String[] METRIC_PATHS = {
+      "Overall Application Performance|Calls per Minute",
+      "Overall Application Performance|Average Response Time (ms)",
+      "Overall Application Performance|Normal Average Response Time (ms)",
+      "Overall Application Performance|Number of Slow Calls",
+      "Overall Application Performance|Number of Very Slow Calls",
+      "Overall Application Performance|Errors per Minute",
+      "Overall Application Performance|Exceptions per Minute",
+      "Overall Application Performance|Infrastructure Errors per Minute"};
 
   private final RestConnection restConnection;
   private final AbstractBuild<?, ?> build;
@@ -26,13 +38,31 @@ public class AppDynamicsDataCollector {
 
   /** Parses the specified reports into {@link AppDynamicsReport}s. */
   public AppDynamicsReport createReportFromMeasurements() {
-    long buildStartTime = 1356877200000L;
-    int durationInMinutes = 20;
-    MetricData avgResponseTime = restConnection.fetchMetricData(
-        "Overall Application Performance|Average Response Time (ms)", buildStartTime, durationInMinutes);
+    long buildStartTime = build.getRootBuild().getTimeInMillis();
+    int durationInMinutes = calculateDurationToFetch(buildStartTime);
 
-    // TODO implement
-    return new AppDynamicsReport(avgResponseTime.getMetricValues());
+    LOG.fine(String.format("Current time: %d - Build time: %d - Duration: %d", System.currentTimeMillis(),
+        buildStartTime, durationInMinutes));
+
+    AppDynamicsReport adReport = new AppDynamicsReport(buildStartTime, durationInMinutes);
+    for (String metricPath : METRIC_PATHS) {
+      MetricData metric = restConnection.fetchMetricData(metricPath, durationInMinutes);
+      adReport.addMetrics(metric);
+    }
+
+    return adReport;
+  }
+
+
+  private int calculateDurationToFetch(final Long buildStartTime) {
+    long duration = System.currentTimeMillis() - buildStartTime;
+
+    int durationInMinutes = (int) (duration / (1000*60));
+    if (durationInMinutes < 10) {
+      durationInMinutes = 10;
+    }
+
+    return durationInMinutes;
   }
 
 }

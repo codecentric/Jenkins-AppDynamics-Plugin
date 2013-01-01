@@ -9,7 +9,6 @@ import nl.codecentric.jenkins.appd.util.LocalMessages;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,9 +18,7 @@ public class BuildActionResultsDisplay implements ModelObject {
 
   /** The {@link AppDynamicsBuildAction} that this report belongs to. */
   private transient AppDynamicsBuildAction buildAction;
-
   private static AbstractBuild<?, ?> currentBuild = null;
-
   private AppDynamicsReport currentReport;
 
   /**
@@ -32,16 +29,9 @@ public class BuildActionResultsDisplay implements ModelObject {
       throws IOException {
     this.buildAction = buildAction;
 
-
-    AppDynamicsReport pregenReport = this.buildAction.getAppDynamicsReport();
-
-    pregenReport.setBuildAction(buildAction);
-    currentReport = pregenReport;
-    // Get the data (again) to show the results actually in a table / graph
-    // TODO: find some way to not fetch the same data twice from the REST interface but re-use the report.
-
-
-    addPreviousBuildReports();
+    currentReport = this.buildAction.getAppDynamicsReport();
+    currentReport.setBuildAction(buildAction);
+    addPreviousBuildReportToExistingReport();
   }
 
   public String getDisplayName() {
@@ -126,8 +116,7 @@ public class BuildActionResultsDisplay implements ModelObject {
   }
 
 
-  private void addPreviousBuildReports() {
-
+  private void addPreviousBuildReportToExistingReport() {
     // Avoid parsing all builds.
     if (BuildActionResultsDisplay.currentBuild == null) {
       BuildActionResultsDisplay.currentBuild = getBuild();
@@ -156,6 +145,4 @@ public class BuildActionResultsDisplay implements ModelObject {
     AppDynamicsReport lastReport = previousBuildActionResults.getAppDynamicsReport();
         getAppDynamicsReport().setLastBuildReport(lastReport);
   }
-
-
 }

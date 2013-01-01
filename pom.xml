@@ -85,6 +85,7 @@
     <compileTarget>1.6</compileTarget>
 
     <jersey.client.version>1.16</jersey.client.version>
+    <joda.time.version>2.1</joda.time.version>
     <!-- define all plugin versions -->
     <maven.version>3.0.4</maven.version>
     <maven-antrun-plugin.version>1.6</maven-antrun-plugin.version>
@@ -205,6 +206,11 @@
       <groupId>com.sun.jersey.contribs</groupId>
       <artifactId>jersey-apache-client</artifactId>
       <version>${jersey.client.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+      <version>${joda.time.version}</version>
     </dependency>
   </dependencies>
 

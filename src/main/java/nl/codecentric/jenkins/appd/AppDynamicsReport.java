@@ -1,49 +1,39 @@
 package nl.codecentric.jenkins.appd;
 
 import hudson.model.AbstractBuild;
+import nl.codecentric.jenkins.appd.rest.types.MetricData;
 import nl.codecentric.jenkins.appd.rest.types.MetricValues;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.List;
 
 /** Represents a single performance report */
-public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
+public class AppDynamicsReport {
 
-  private final List<MetricValues> averageResponseTimeMetrics;
-
-  public AppDynamicsReport(final List<MetricValues> averageResponseTimeMetrics) {
-    this.averageResponseTimeMetrics = averageResponseTimeMetrics;
-  }
-
-
-  //extends AbstractReport
-  public final static String END_PERFORMANCE_PARAMETER = ".endperformanceparameter";
+  private final List<MetricData> metricDataList = new ArrayList<MetricData>();
+  private final Long reportTimestamp;
+  private final Integer reportDurationInMinutes;
 
   private AppDynamicsBuildAction buildAction;
-
   private AppDynamicsReport lastBuildReport;
 
-  public int compareTo(AppDynamicsReport appdReport) {
-    if (this == appdReport) {
-      return 0;
-    }
-//    return getReportFileName().compareTo(jmReport.getReportFileName());
-    return -1;
+  public AppDynamicsReport(final Long timestamp, final Integer durationInMinutes) {
+    this.reportTimestamp = timestamp;
+    this.reportDurationInMinutes = durationInMinutes;
   }
 
-  //  public int countErrors() {
-//    int nbError = 0;
-//    for (UriReport currentReport : uriReportMap.values()) {
-//      if (buildAction.getPerformanceReportMap().ifSummarizerParserUsed(reportFileName))  {
-//        nbError += currentReport.getHttpSampleList().get(0).getSummarizerErrors();
-//      } else {
-//        nbError += currentReport.countErrors();
-//      }
-//    }
-//    return nbError;
-//  }
-//
+  public void addMetrics(final MetricData metrics) {
+    metricDataList.add(metrics);
+  }
+
+  public List<MetricData> getMetricsList() {
+    return metricDataList;
+  }
+
+
   public double errorPercent() {
 //    if (buildAction.getPerformanceReportMap().ifSummarizerParserUsed(reportFileName))  {
 //      return size() == 0 ? 0 : ((double) countErrors()) / size();
@@ -55,22 +45,16 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 
   //
   public long getAverage() {
-
-    long totalAverage = 0;
-    for (MetricValues value : this.averageResponseTimeMetrics) {
-      totalAverage += value.getCurrent();
+    long result = 0;
+    long total = 0;
+    for (MetricValues value : this.metricDataList.get(0).getMetricValues()) {
+      total += value.getValue();
     }
 
-    long result = totalAverage / this.averageResponseTimeMetrics.size();
-//    int size = size();
-//    if (size != 0) {
-//      long average = 0;
-//      for (UriReport currentReport : uriReportMap.values()) {
-//        average += currentReport.getAverage() * currentReport.size();
-//      }
-//      double test = average / size;
-//      result = (int) test;
-//    }
+    if (this.metricDataList.get(0).getMetricValues().size() > 0) {
+      result = total / this.metricDataList.get(0).getMetricValues().size();
+    }
+
     return result;
   }
 
@@ -91,81 +75,6 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
     min = 3480;
     return min;
   }
-
-  //
-//  public long get90Line() {
-//    long result = 0;
-//    int size = size();
-//    if (size != 0) {
-//      long average = 0;
-//      List<HttpSample> allSamples = new ArrayList<HttpSample>();
-//      for (UriReport currentReport : uriReportMap.values()) {
-//        allSamples.addAll(currentReport.getHttpSampleList());
-//      }
-//      Collections.sort(allSamples);
-//      result = allSamples.get((int) (allSamples.size() * .9)).getDuration();
-//    }
-//    return result;
-//  }
-//
-//  public long getMedian() {
-//    long result = 0;
-//    int size = size();
-//    if (size != 0) {
-//      long average = 0;
-//      List<HttpSample> allSamples = new ArrayList<HttpSample>();
-//      for (UriReport currentReport : uriReportMap.values()) {
-//        allSamples.addAll(currentReport.getHttpSampleList());
-//      }
-//      Collections.sort(allSamples);
-//      result = allSamples.get((int) (allSamples.size() * .5)).getDuration();
-//    }
-//    return result;
-//  }
-//
-//  public String getHttpCode() {
-//    return "";
-//  }
-//
-  public AbstractBuild<?, ?> getBuild() {
-    return buildAction.getBuild();
-  }
-
-  AppDynamicsBuildAction getBuildAction() {
-    return buildAction;
-  }
-
-  void setBuildAction(AppDynamicsBuildAction buildAction) {
-    this.buildAction = buildAction;
-  }
-
-  public void setLastBuildReport(AppDynamicsReport lastBuildReport) {
-    this.lastBuildReport = lastBuildReport;
-  }
-
-//
-//  public String getDisplayName() {
-//    return Messages.Report_DisplayName();
-//  }
-//
-//  public UriReport getDynamic(String token) throws IOException {
-//    return getUriReportMap().get(token);
-//  }
-//
-//  public HttpSample getHttpSample() {
-//    return httpSample;
-//  }
-//
-
-  public String getName() {
-    return "AD Response Time report";
-  }
-
-  public boolean isFailed() {
-    return false; // Was there some error??
-  }
-
-
 
 //  public long getAverageDiff() {
 //    if ( lastBuildReport == null ) {
@@ -198,5 +107,27 @@ public class AppDynamicsReport implements Comparable<AppDynamicsReport> {
 //    }
 //    return size() - lastBuildReport.size();
 //  }
+
+  public String getName() {
+    DateTimeFormatter dateTimeFormat = DateTimeFormat.mediumDateTime();
+    return String.format("AppDynamics Metric Report for time %s - with a duration of %d minutes",
+      dateTimeFormat.print(this.reportTimestamp), reportDurationInMinutes);
+  }
+
+  public AbstractBuild<?, ?> getBuild() {
+    return buildAction.getBuild();
+  }
+
+  AppDynamicsBuildAction getBuildAction() {
+    return buildAction;
+  }
+
+  void setBuildAction(AppDynamicsBuildAction buildAction) {
+    this.buildAction = buildAction;
+  }
+
+  public void setLastBuildReport(AppDynamicsReport lastBuildReport) {
+    this.lastBuildReport = lastBuildReport;
+  }
 
 }

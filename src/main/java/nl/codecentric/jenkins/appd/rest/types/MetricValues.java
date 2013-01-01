@@ -1,5 +1,8 @@
 package nl.codecentric.jenkins.appd.rest.types;
 
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 /**
  * POJO object for unmarshalling JSON data from the AppDynamics REST interface.
  * Maps to the following structure (part of {@link MetricData}:
@@ -9,8 +12,12 @@ package nl.codecentric.jenkins.appd.rest.types;
  *     "min": 0,
  *     "startTimeInMillis": 1356877200000,
  *     "value": 6
+ *
+ *     ==> The 'value' field contains the actual value requested.
  */
 public class MetricValues {
+  private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.mediumDateTime();
+
   private Integer current;
   private Integer max;
   private Integer min;
@@ -47,6 +54,10 @@ public class MetricValues {
 
   public void setStartTimeInMillis(Long startTimeInMillis) {
     this.startTimeInMillis = startTimeInMillis;
+  }
+
+  public String getFormattedTime() {
+    return DATE_TIME_FORMATTER.print(this.startTimeInMillis);
   }
 
   public Integer getValue() {

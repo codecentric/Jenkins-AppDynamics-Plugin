@@ -32,7 +32,8 @@ public class RestConnection {
   private static final String REST_PARAM_DURATION_IN_MINS = "duration-in-mins";
   private static final String REST_PARAM_ROLLUP = "rollup";
   private static final String REST_PARAM_OUTPUT = "output";
-  private static final String PARAM_DEFAULT_TIME_RANGE_TYPE = "AFTER_TIME";
+  private static final String PARAM_TIME_RANGE_TYPE_AFTER_TIME = "AFTER_TIME";
+  private static final String PARAM_TIME_RANGE_TYPE_BEFORE_NOW = "BEFORE_NOW";
   private static final String PARAM_DEFAULT_ROLLUP = "false";
   private static final String PARAM_DEFAULT_OUTPUT = "JSON";
 
@@ -78,12 +79,21 @@ public class RestConnection {
     return validationResult;
   }
 
-  public MetricData fetchMetricData(String metricPath, long buildStartTime, int durationInMinutes) {
+  public MetricData fetchMetricData(final String metricPath, int durationInMinutes) {
+    return fetchMetricData(metricPath, durationInMinutes, -1);
+  }
+
+  public MetricData fetchMetricData(final String metricPath, int durationInMinutes, long buildStartTime) {
     String encodedMetricPath = encodeRestSegment(metricPath);
     MultivaluedMap<String, String> paramMap = new MultivaluedMapImpl();
     paramMap.add(REST_PARAM_METRIC_PATH, encodedMetricPath);
-    paramMap.add(REST_PARAM_TIME_RANGE_TYPE, PARAM_DEFAULT_TIME_RANGE_TYPE);
-    paramMap.add(REST_PARAM_START_TIME, Long.toString(buildStartTime));
+
+    if (buildStartTime > 0) {
+      paramMap.add(REST_PARAM_TIME_RANGE_TYPE, PARAM_TIME_RANGE_TYPE_AFTER_TIME);
+      paramMap.add(REST_PARAM_START_TIME, Long.toString(buildStartTime));
+    } else {
+      paramMap.add(REST_PARAM_TIME_RANGE_TYPE, PARAM_TIME_RANGE_TYPE_BEFORE_NOW);
+    }
     paramMap.add(REST_PARAM_DURATION_IN_MINS, Integer.toString(durationInMinutes));
     paramMap.add(REST_PARAM_ROLLUP, PARAM_DEFAULT_ROLLUP);
     paramMap.add(REST_PARAM_OUTPUT, PARAM_DEFAULT_OUTPUT);

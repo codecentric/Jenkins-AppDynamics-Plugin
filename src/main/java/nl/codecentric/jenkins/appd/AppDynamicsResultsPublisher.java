@@ -184,9 +184,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
     logger.println("Connection successful, continue to fetch measurements from AppDynamics Controller ...");
 
-    // add the report to the build object.
     AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build);
-    // Kicking in the Data Collector
     AppDynamicsReport report = dataCollector.createReportFromMeasurements();
 
     AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, report);

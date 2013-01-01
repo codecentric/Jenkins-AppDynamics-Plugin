@@ -5,16 +5,20 @@
     <st:include it="${it.build}" page="sidepanel.jelly"/>
     <l:main-panel>
       <j:set var="report" value="${it.getAppDynamicsReport()}"/>
-      <h2>Performance Breakdown by URI: ${report.getName()}</h2>
+      <h2>${report.getName()}</h2>
 
+      <j:forEach var="metricData" items="${report.metricsList}">
+        <h3>Metric Path: ${metricData.metricPath} with interval: ${metricData.frequency}</h3>
 
-      <table class="sortable source" border="1">
-        <jm:captionLine/>
-        <tr class="${h.ifThenElse(report.failed,'red','')}">
-          <jm:summaryTable it="${report}"/>
-        </tr>
-
-      </table>
+        <table class="sortable source" border="1">
+          <jm:captionLine/>
+          <j:forEach var="metricValue" items="${metricData.metricValues}">
+            <tr class="${h.ifThenElse(report.failed,'red','')}">
+              <jm:summaryTable it="${metricValue}"/>
+            </tr>
+          </j:forEach>
+        </table>
+      </j:forEach>
     </l:main-panel>
   </l:layout>
 </j:jelly>

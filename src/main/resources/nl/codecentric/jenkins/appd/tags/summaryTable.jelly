@@ -1,6 +1,7 @@
 <j:jelly xmlns:j="jelly:core">
-  <td>${it.getAverage()}</td>
+
+  <td>${it.getFormattedTime()}</td>
+  <td>${it.getValue()}</td>
   <td>${it.getMin()}</td>
   <td>${it.getMax()}</td>
-  <td>${it.errorPercent()} %</td>
 </j:jelly>
