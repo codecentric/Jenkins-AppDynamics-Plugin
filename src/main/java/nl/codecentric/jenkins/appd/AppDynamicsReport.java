@@ -3,17 +3,20 @@ package nl.codecentric.jenkins.appd;
 import hudson.model.AbstractBuild;
 import nl.codecentric.jenkins.appd.rest.types.MetricData;
 import nl.codecentric.jenkins.appd.rest.types.MetricValues;
-import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
-/** Represents a single performance report */
+/**
+ * Represents a single performance report
+ */
 public class AppDynamicsReport {
 
-  private final List<MetricData> metricDataList = new ArrayList<MetricData>();
+  private final Map<String, MetricData> keyedMetricDataMap = new LinkedHashMap<String, MetricData>();
   private final Long reportTimestamp;
   private final Integer reportDurationInMinutes;
 
@@ -26,11 +29,15 @@ public class AppDynamicsReport {
   }
 
   public void addMetrics(final MetricData metrics) {
-    metricDataList.add(metrics);
+    keyedMetricDataMap.put(metrics.getMetricPath(), metrics);
+  }
+
+  public MetricData getMetricByKey(final String key) {
+    return keyedMetricDataMap.get(key);
   }
 
   public List<MetricData> getMetricsList() {
-    return metricDataList;
+    return new ArrayList<MetricData>(keyedMetricDataMap.values());
   }
 
 
@@ -47,12 +54,12 @@ public class AppDynamicsReport {
   public long getAverage() {
     long result = 0;
     long total = 0;
-    for (MetricValues value : this.metricDataList.get(0).getMetricValues()) {
+    for (MetricValues value : getMetricsList().get(0).getMetricValues()) {
       total += value.getValue();
     }
 
-    if (this.metricDataList.get(0).getMetricValues().size() > 0) {
-      result = total / this.metricDataList.get(0).getMetricValues().size();
+    if (getMetricsList().get(0).getMetricValues().size() > 0) {
+      result = total / getMetricsList().get(0).getMetricValues().size();
     }
 
     return result;
@@ -111,7 +118,7 @@ public class AppDynamicsReport {
   public String getName() {
     DateTimeFormatter dateTimeFormat = DateTimeFormat.mediumDateTime();
     return String.format("AppDynamics Metric Report for time %s - with a duration of %d minutes",
-      dateTimeFormat.print(this.reportTimestamp), reportDurationInMinutes);
+        dateTimeFormat.print(this.reportTimestamp), reportDurationInMinutes);
   }
 
   public AbstractBuild<?, ?> getBuild() {

@@ -9,14 +9,24 @@
 
       <j:forEach var="metricData" items="${report.metricsList}">
         <h3>Metric Path: ${metricData.metricPath} with interval: ${metricData.frequency}</h3>
+        <table width="100%">
+          <tr>
+            <td width="50%">
 
-        <table class="sortable source" border="1">
-          <jm:captionLine/>
-          <j:forEach var="metricValue" items="${metricData.metricValues}">
-            <tr class="${h.ifThenElse(report.failed,'red','')}">
-              <jm:summaryTable it="${metricValue}"/>
-            </tr>
-          </j:forEach>
+              <table class="sortable source" border="1">
+                <jm:captionLine/>
+                <j:forEach var="metricValue" items="${metricData.metricValues}">
+                  <tr class="${h.ifThenElse(report.failed,'red','')}">
+                    <jm:summaryTable it="${metricValue}"/>
+                  </tr>
+                </j:forEach>
+              </table>
+
+            </td>
+            <td width="50%">
+              <img class="trend" src="./summarizerGraph?width=400&amp;height=300&amp;metricDataKey=${metricData.metricPath}" width="400" height="300" />
+            </td>
+          </tr>
         </table>
       </j:forEach>
     </l:main-panel>

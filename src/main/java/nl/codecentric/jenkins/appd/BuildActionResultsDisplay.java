@@ -3,26 +3,36 @@ package nl.codecentric.jenkins.appd;
 import hudson.model.AbstractBuild;
 import hudson.model.ModelObject;
 import hudson.model.TaskListener;
-import hudson.util.ChartUtil.NumberOnlyBuildLabel;
 import hudson.util.DataSetBuilder;
+import hudson.util.Graph;
+import nl.codecentric.jenkins.appd.rest.types.MetricData;
+import nl.codecentric.jenkins.appd.rest.types.MetricValues;
 import nl.codecentric.jenkins.appd.util.LocalMessages;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.category.CategoryDataset;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 
+import java.awt.*;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
-/** Root object of a AppDynamics Build Report. */
+/**
+ * Root object of a AppDynamics Build Report.
+ */
 public class BuildActionResultsDisplay implements ModelObject {
 
-  /** The {@link AppDynamicsBuildAction} that this report belongs to. */
+  /**
+   * The {@link AppDynamicsBuildAction} that this report belongs to.
+   */
   private transient AppDynamicsBuildAction buildAction;
   private static AbstractBuild<?, ?> currentBuild = null;
   private AppDynamicsReport currentReport;
 
   /**
    * Parses the reports and build a {@link BuildActionResultsDisplay}.
+   *
    * @throws java.io.IOException If a report fails to parse.
    */
   BuildActionResultsDisplay(final AppDynamicsBuildAction buildAction, TaskListener listener)
@@ -47,74 +57,6 @@ public class BuildActionResultsDisplay implements ModelObject {
   public AppDynamicsReport getAppDynamicsReport() {
     return currentReport;
   }
-
-
-  /**
-   * <p>
-   * Verify if the AppDynamicsReport exist the AppDynamicsReportName must to be like it
-   * is in the build
-   * </p>
-   * @return boolean
-   */
-  public boolean isFailed() {
-    return getAppDynamicsReport() == null;
-  }
-
-    // TODO rename to correctly render graph
-  public void doRespondingTimeGraphStub(StaplerRequest request,
-                                    StaplerResponse response) throws IOException {
-    String parameter = request.getParameter("AppDynamicsReportPosition");
-    AbstractBuild<?, ?> previousBuild = getBuild();
-    final Map<AbstractBuild<?, ?>, AppDynamicsReport> buildReport = new LinkedHashMap<AbstractBuild<?, ?>, AppDynamicsReport>();
-    while (previousBuild != null) {
-      final AbstractBuild<?, ?> currentBuild = previousBuild;
-//      parseReports(currentBuild, TaskListener.NULL, new AppDynamicsReportCollector() {
-//        public void add(AppDynamicsReport parse) {
-//          buildReport.put(currentBuild, parse);
-//        }
-//      }, parameter);
-      previousBuild = previousBuild.getPreviousBuild();
-    }
-    //Now we should have the data necessary to generate the graphs!
-    DataSetBuilder<String, NumberOnlyBuildLabel> dataSetBuilderAverage = new DataSetBuilder<String, NumberOnlyBuildLabel>();
-    for (AbstractBuild<?, ?> currentBuild : buildReport.keySet()) {
-      NumberOnlyBuildLabel label = new NumberOnlyBuildLabel(currentBuild);
-      AppDynamicsReport report = buildReport.get(currentBuild);
-      // TODO           dataSetBuilderAverage.add(report.getAverage(), Messages.ProjectAction_Average(), label);
-    }
-// TODO        ChartUtil.generateGraph(request, response, PerformanceProjectAction.createRespondingTimeChart(dataSetBuilderAverage.build()), 400, 200);
-  }
-
-  public void doSummarizerGraph(StaplerRequest request,
-                                StaplerResponse response) throws IOException {
-    String parameter = request.getParameter("AppDynamicsReportPosition");
-    AbstractBuild<?, ?> previousBuild = getBuild();
-    final Map<AbstractBuild<?, ?>, AppDynamicsReport> buildReport = new LinkedHashMap<AbstractBuild<?, ?>, AppDynamicsReport>();
-
-    while (previousBuild != null) {
-      final AbstractBuild<?, ?> currentBuild = previousBuild;
-//      parseReports(currentBuild, TaskListener.NULL, new AppDynamicsReportCollector() {
-//
-//        public void add(AppDynamicsReport parse) {
-//          buildReport.put(currentBuild, parse);
-//        }
-//      }, parameter);
-      previousBuild = previousBuild.getPreviousBuild();
-    }
-    DataSetBuilder<NumberOnlyBuildLabel, String> dataSetBuilderSummarizer = new DataSetBuilder<NumberOnlyBuildLabel, String>();
-    for (AbstractBuild<?, ?> currentBuild : buildReport.keySet()) {
-      NumberOnlyBuildLabel label = new NumberOnlyBuildLabel(currentBuild);
-      AppDynamicsReport report = buildReport.get(currentBuild);
-
-      //Now we should have the data necessary to generate the graphs!
-// TODO          for (String key:report.getUriReportMap().keySet()) {
-//               Long methodAvg=report.getUriReportMap().get(key).getHttpSampleList().get(0).getDuration();
-//               dataSetBuilderSummarizer.add(methodAvg, label, key);
-//           };
-    }
-// TODO       ChartUtil.generateGraph(request, response, PerformanceProjectAction.createSummarizerChart(dataSetBuilderSummarizer.build(), "ms", Messages.ProjectAction_RespondingTime()), 400, 200);
-  }
-
 
   private void addPreviousBuildReportToExistingReport() {
     // Avoid parsing all builds.
@@ -143,6 +85,80 @@ public class BuildActionResultsDisplay implements ModelObject {
     }
 
     AppDynamicsReport lastReport = previousBuildActionResults.getAppDynamicsReport();
-        getAppDynamicsReport().setLastBuildReport(lastReport);
+    getAppDynamicsReport().setLastBuildReport(lastReport);
+  }
+
+  /**
+   * <p>
+   * Verify if the AppDynamicsReport exist the AppDynamicsReportName must to be like it
+   * is in the build
+   * </p>
+   *
+   * @return boolean
+   */
+  public boolean isFailed() {
+    return getAppDynamicsReport() == null;
+  }
+
+
+  /**
+   * Graph of metric points over time.
+   */
+  public void doSummarizerGraph(final StaplerRequest request,
+                                final StaplerResponse response) throws IOException {
+    final String metricKey = request.getParameter("metricDataKey");
+    final MetricData metricData = this.currentReport.getMetricByKey(metricKey);
+
+    final Graph graph = new GraphImpl(metricKey, metricData.getFrequency()) {
+
+      protected DataSetBuilder<String, Integer> createDataSet() {
+        DataSetBuilder<String, Integer> dataSetBuilder = new DataSetBuilder<String, Integer>();
+
+        int i = 1;
+        for (MetricValues value : metricData.getMetricValues()) {
+          dataSetBuilder.add(value.getValue(), metricKey, i++);
+        }
+
+        return dataSetBuilder;
+      }
+    };
+
+    graph.doPng(request, response);
+  }
+
+
+  private abstract class GraphImpl extends Graph {
+    private final String graphTitle;
+    private final String xLabel;
+
+    protected GraphImpl(final String metricKey, final String frequency) {
+      super(-1, 400, 300); // cannot use timestamp, since ranges may change
+      this.graphTitle = stripTitle(metricKey);
+      this.xLabel = "Time in " + frequency;
+    }
+
+    private String stripTitle(final String metricKey) {
+      return metricKey.substring(metricKey.lastIndexOf("|") + 1);
+    }
+
+    protected abstract DataSetBuilder<String, Integer> createDataSet();
+
+    protected JFreeChart createGraph() {
+      final CategoryDataset dataset = createDataSet().build();
+
+      final JFreeChart chart = ChartFactory.createLineChart(graphTitle, // title
+          xLabel, // category axis label
+          null, // value axis label
+          dataset, // data
+          PlotOrientation.VERTICAL, // orientation
+          false, // include legend
+          true, // tooltips
+          false // urls
+      );
+
+      chart.setBackgroundPaint(Color.white);
+
+      return chart;
+    }
   }
 }
