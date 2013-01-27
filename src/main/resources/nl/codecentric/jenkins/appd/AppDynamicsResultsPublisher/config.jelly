@@ -21,6 +21,10 @@
       title="${%appdynamics.connection.test.title}" progress="${%appdynamics.connection.test.progress}"
       method="testAppDynamicsConnection" with="appdynamicsRestUri,username,password,applicationName" />
 
+  <f:entry field="thresholdMetric" title="${%appdynamics.threshold.metric.title}" description="${%appdynamics.threshold.metric.description}">
+    <f:select />
+  </f:entry>
+
   <f:entry title="${%performance.threshold.title}" description="${%performance.threshold.description}">
     <table width="250px">
       <thead>
@@ -40,11 +44,11 @@
         <tr>
           <td style="vertical-align:middle">${%Thresholds}:</td>
           <td>
-            <f:number field="errorUnstableThreshold" default="${descriptor.defaultUnstableThreshold}" min="0" max="100" />
+            <f:number field="performanceUnstableThreshold" default="${descriptor.defaultUnstableThreshold}" min="0" max="100" />
           </td>
           <td>%</td>
           <td>
-            <f:number field="errorFailedThreshold" default="${descriptor.defaultFailedThreshold}" min="0" max="100" />
+            <f:number field="performanceFailedThreshold" default="${descriptor.defaultFailedThreshold}" min="0" max="100" />
           </td>
           <td>%</td>
         </tr>

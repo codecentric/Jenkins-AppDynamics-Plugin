@@ -32,93 +32,63 @@ public class AppDynamicsReport {
     keyedMetricDataMap.put(metrics.getMetricPath(), metrics);
   }
 
-  public MetricData getMetricByKey(final String key) {
-    return keyedMetricDataMap.get(key);
+  public MetricData getMetricByKey(final String metricKey) {
+    final MetricData selectedMetric = keyedMetricDataMap.get(metricKey);
+    if (selectedMetric == null) {
+      throw new IllegalArgumentException("Provided Metric Key is not available, tried to select; " + metricKey);
+    }
+    return selectedMetric;
   }
 
   public List<MetricData> getMetricsList() {
     return new ArrayList<MetricData>(keyedMetricDataMap.values());
   }
 
+  public long getAverageForMetric(final String metricKey) {
+    final MetricData selectedMetric = getMetricByKey(metricKey);
 
-  public double errorPercent() {
-//    if (buildAction.getPerformanceReportMap().ifSummarizerParserUsed(reportFileName))  {
-//      return size() == 0 ? 0 : ((double) countErrors()) / size();
-//    } else {
-//      return size() == 0 ? 0 : ((double) countErrors()) / size() * 100;
-//    }
-    return 5.3;
-  }
-
-  //
-  public long getAverage() {
-    long result = 0;
-    long total = 0;
-    for (MetricValues value : getMetricsList().get(0).getMetricValues()) {
-      total += value.getValue();
+    long calculatedSum = 0;
+    for (MetricValues value : selectedMetric.getMetricValues()) {
+      calculatedSum += value.getValue();
     }
 
-    if (getMetricsList().get(0).getMetricValues().size() > 0) {
-      result = total / getMetricsList().get(0).getMetricValues().size();
+    final int numberOfMeasurements = selectedMetric.getMetricValues().size();
+    long result = -1;
+    if (numberOfMeasurements > 0) {
+      result = calculatedSum / numberOfMeasurements;
     }
 
     return result;
   }
 
-  public long getMax() {
+  public long getMaxForMetric(final String metricKey) {
+    final MetricData selectedMetric = getMetricByKey(metricKey);
+
     long max = Long.MIN_VALUE;
-//    for (UriReport currentReport : uriReportMap.values()) {
-//      max = Math.max(currentReport.getMax(), max);
-//    }
-    max = 83700;
+    for (MetricValues value : selectedMetric.getMetricValues()) {
+      max = Math.max(value.getMax(), max);
+    }
     return max;
   }
 
-  public long getMin() {
+  public long getMinForMetric(final String metricKey) {
+    final MetricData selectedMetric = getMetricByKey(metricKey);
+
     long min = Long.MAX_VALUE;
-//    for (UriReport currentReport : uriReportMap.values()) {
-//      min = Math.min(currentReport.getMin(), min);
-//    }
-    min = 3480;
+    for (MetricValues value : selectedMetric.getMetricValues()) {
+      min = Math.min(value.getMin(), min);
+    }
     return min;
   }
-
-//  public long getAverageDiff() {
-//    if ( lastBuildReport == null ) {
-//      return 0;
-//    }
-//    return getAverage() - lastBuildReport.getAverage();
-//  }
-//
-//  public long getMedianDiff() {
-//    if ( lastBuildReport == null ) {
-//      return 0;
-//    }
-//    return getMedian() - lastBuildReport.getMedian();
-//  }
-//
-//  public double getErrorPercentDiff() {
-//    if ( lastBuildReport == null ) {
-//      return 0;
-//    }
-//    return errorPercent() - lastBuildReport.errorPercent();
-//  }
-//
-//  public String getLastBuildHttpCodeIfChanged() {
-//    return "";
-//  }
-//
-//  public int getSizeDiff() {
-//    if ( lastBuildReport == null ) {
-//      return 0;
-//    }
-//    return size() - lastBuildReport.size();
-//  }
 
   public String getName() {
     DateTimeFormatter dateTimeFormat = DateTimeFormat.mediumDateTime();
     return String.format("AppDynamics Metric Report for time %s - with a duration of %d minutes",
         dateTimeFormat.print(this.reportTimestamp), reportDurationInMinutes);
+  }
+
+  public long getTimestamp() {
+    return reportTimestamp;
   }
 
   public AbstractBuild<?, ?> getBuild() {

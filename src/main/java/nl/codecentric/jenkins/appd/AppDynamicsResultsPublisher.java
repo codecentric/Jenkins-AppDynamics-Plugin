@@ -8,13 +8,15 @@ import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Publisher;
 import hudson.tasks.Recorder;
 import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import nl.codecentric.jenkins.appd.rest.RestConnection;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNAME;
 
@@ -31,8 +33,8 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNA
 public class AppDynamicsResultsPublisher extends Recorder {
 
   private static final String DEFAULT_USERNAME = "username@customer1";
-  private static final int DEFAULT_THRESHOLD_UNSTABLE = 70;
-  private static final int DEFAULT_THRESHOLD_FAILED = 90;
+  private static final int DEFAULT_THRESHOLD_UNSTABLE = 90;
+  private static final int DEFAULT_THRESHOLD_FAILED = 70;
 
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
@@ -56,11 +58,21 @@ public class AppDynamicsResultsPublisher extends Recorder {
     }
 
     public int getDefaultUnstableThreshold() {
-        return DEFAULT_THRESHOLD_UNSTABLE;
+      return DEFAULT_THRESHOLD_UNSTABLE;
     }
 
     public int getDefaultFailedThreshold() {
-        return DEFAULT_THRESHOLD_FAILED;
+      return DEFAULT_THRESHOLD_FAILED;
+    }
+
+    public ListBoxModel doFillThresholdMetricItems() {
+      ListBoxModel model = new ListBoxModel();
+
+      for (String value : AppDynamicsDataCollector.getAvailableMetricPaths()) {
+        model.add(value);
+      }
+
+      return model;
     }
 
     public FormValidation doCheckAppdynamicsRestUri(@QueryParameter final String appdynamicsRestUri) {
@@ -133,29 +145,35 @@ public class AppDynamicsResultsPublisher extends Recorder {
   public static final DescriptorImpl DESCRIPTOR = new DescriptorImpl();
 
   private RestConnection connection;
-  /** Below fields are configured via the <code>config.jelly</code> page. */
+  /**
+   * Below fields are configured via the <code>config.jelly</code> page.
+   */
   private String appdynamicsRestUri = "";
   private String username = "";
   private String password = "";
   private String applicationName = "";
-  private Integer errorFailedThreshold;
-  private Integer errorUnstableThreshold;
+  private String thresholdMetric;
+  private Integer performanceFailedThreshold;
+  private Integer performanceUnstableThreshold;
 
   @DataBoundConstructor
   public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String username,
                                      final String password, final String applicationName,
-                                     final Integer errorFailedThreshold, final Integer errorUnstableThreshold) {
+                                     final String thresholdMetric,
+                                     final Integer performanceFailedThreshold,
+                                     final Integer performanceUnstableThreshold) {
     setAppdynamicsRestUri(appdynamicsRestUri);
     setUsername(username);
     setPassword(password);
     setApplicationName(applicationName);
-    setErrorFailedThreshold(errorFailedThreshold);
-    setErrorUnstableThreshold(errorUnstableThreshold);
+    setThresholdMetric(thresholdMetric);
+    setPerformanceFailedThreshold(performanceFailedThreshold);
+    setPerformanceUnstableThreshold(performanceUnstableThreshold);
   }
 
   @Override
   public BuildStepDescriptor<Publisher> getDescriptor() {
-      return DESCRIPTOR;
+    return DESCRIPTOR;
   }
 
   @Override
@@ -178,7 +196,8 @@ public class AppDynamicsResultsPublisher extends Recorder {
     logger.println("Verify connection to AppDynamics REST interface ...");
     if (!connection.validateConnection()) {
       logger.println("Connection to AppDynamics REST interface unsuccessful, cannot proceed with this build step");
-      build.setResult(Result.FAILURE);
+      if (build.getResult().isBetterOrEqualTo(Result.UNSTABLE))
+        build.setResult(Result.FAILURE);
       return true;
     }
 
@@ -190,23 +209,30 @@ public class AppDynamicsResultsPublisher extends Recorder {
     AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, report);
     build.addAction(buildAction);
 
+    logger.println("Ready building AppDynamics report");
+    logger.println("Verifying for improving or degrading performance, main metric: " + thresholdMetric);
 
+    try {
+      // Verify if the necessary metric is successfully fetched.
+      report.getMetricByKey(this.thresholdMetric);
+    } catch (Exception e) {
+      logger.println("Unable to fetch (threshold) metric to determine if build is degrading. Aborting");
+      if (build.getResult().isBetterOrEqualTo(Result.UNSTABLE))
+        build.setResult(Result.FAILURE);
+      return true;
+    }
 
-    // TODO Parse the reports and verify whether they were successful
-
-
-
-    if (errorUnstableThreshold >= 0 && errorUnstableThreshold <= 100) {
-      logger.println("Performance: Percentage of errors greater or equal than "
-          + errorUnstableThreshold + "% sets the build as "
+    if (performanceUnstableThreshold >= 0 && performanceUnstableThreshold <= 100) {
+      logger.println("Performance degradation greater or equal than "
+          + performanceUnstableThreshold + "% sets the build as "
           + Result.UNSTABLE.toString().toLowerCase());
     } else {
       logger.println("Performance: No threshold configured for making the test "
           + Result.UNSTABLE.toString().toLowerCase());
     }
-    if (errorFailedThreshold >= 0 && errorFailedThreshold <= 100) {
-      logger.println("Performance: Percentage of errors greater or equal than "
-          + errorFailedThreshold + "% sets the build as "
+    if (performanceFailedThreshold >= 0 && performanceFailedThreshold <= 100) {
+      logger.println("Performance degradation greater or equal than "
+          + performanceFailedThreshold + "% sets the build as "
           + Result.FAILURE.toString().toLowerCase());
     } else {
       logger.println("Performance: No threshold configured for making the test "
@@ -215,27 +241,69 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
 
     // mark the build as unstable or failure depending on the outcome.
+    long calculatedAverage = calculateAverageBasedOnPreviousReports(
+        getListOfPreviousReports(build, report.getTimestamp()));
+
+    long performanceComparedToPrev = (report.getAverageForMetric(thresholdMetric) / calculatedAverage) * 100;
+
     double thresholdTolerance = 0.00000001;
 
-    double errorPercent = 0.0; //r.errorPercent();
     Result result = Result.SUCCESS;
-    if (errorFailedThreshold >= 0 && errorPercent - errorFailedThreshold > thresholdTolerance) {
+    if (performanceFailedThreshold >= 0
+        && performanceComparedToPrev - performanceFailedThreshold < thresholdTolerance) {
       result = Result.FAILURE;
       build.setResult(Result.FAILURE);
-    } else if (errorUnstableThreshold >= 0
-        && errorPercent - errorUnstableThreshold > thresholdTolerance) {
+    } else if (performanceUnstableThreshold >= 0
+        && performanceComparedToPrev - performanceUnstableThreshold < thresholdTolerance) {
       result = Result.UNSTABLE;
+      if (result.isWorseThan(build.getResult())) {
+        build.setResult(result);
+      }
     }
-    if (result.isWorseThan(build.getResult())) {
-      build.setResult(result);
-    }
-//      logger.println("Performance: File " + r.getReportFileName()
-//          + " reported " + errorPercent
-//          + "% of errors [" + result + "]. Build status is: "
-//          + build.getResult());
 
+    logger.println("Metric: " + thresholdMetric
+        + " reported performance compared to average of " + performanceComparedToPrev
+        + "% . Build status is: " + build.getResult());
 
     return true;
+  }
+
+  private long calculateAverageBasedOnPreviousReports(final List<AppDynamicsReport> reports) {
+    long calculatedSum = 0;
+    int numberOfMeasurements = 0;
+    for (AppDynamicsReport report : reports) {
+      long value = report.getAverageForMetric(thresholdMetric);
+      if (value >= 0) {
+        calculatedSum += value;
+        numberOfMeasurements++;
+      }
+    }
+
+    long result = -1;
+    if (numberOfMeasurements > 0) {
+      result = calculatedSum / numberOfMeasurements;
+    }
+
+    return result;
+  }
+
+  private List<AppDynamicsReport> getListOfPreviousReports(final AbstractBuild<?, ?> build,
+                                                           final long currentTimestamp) {
+    final List<AppDynamicsReport> previousReports = new ArrayList<AppDynamicsReport>();
+
+    final List<? extends AbstractBuild<?, ?>> builds = build.getProject().getBuilds();
+    for (AbstractBuild<?, ?> currentBuild : builds) {
+      final AppDynamicsBuildAction performanceBuildAction = currentBuild.getAction(AppDynamicsBuildAction.class);
+      if (performanceBuildAction == null) {
+        continue;
+      }
+      final AppDynamicsReport report = performanceBuildAction.getBuildActionResultsDisplay().getAppDynamicsReport();
+      if (report != null && report.getTimestamp() != currentTimestamp) {
+        previousReports.add(report);
+      }
+    }
+
+    return previousReports;
   }
 
   public String getAppdynamicsRestUri() {
@@ -270,19 +338,27 @@ public class AppDynamicsResultsPublisher extends Recorder {
     this.applicationName = applicationName;
   }
 
-  public Integer getErrorFailedThreshold() {
-    return errorFailedThreshold;
+  public String getThresholdMetric() {
+    return thresholdMetric;
   }
 
-  public void setErrorFailedThreshold(final Integer errorFailedThreshold) {
-    this.errorFailedThreshold = Math.max(0, Math.min(errorFailedThreshold, 100));
+  public void setThresholdMetric(String thresholdMetric) {
+    this.thresholdMetric = thresholdMetric;
   }
 
-  public Integer getErrorUnstableThreshold() {
-    return errorUnstableThreshold;
+  public Integer getPerformanceFailedThreshold() {
+    return performanceFailedThreshold;
   }
 
-  public void setErrorUnstableThreshold(final Integer errorUnstableThreshold) {
-    this.errorUnstableThreshold = Math.max(0, Math.min(errorUnstableThreshold, 100));
+  public void setPerformanceFailedThreshold(final Integer performanceFailedThreshold) {
+    this.performanceFailedThreshold = Math.max(0, Math.min(performanceFailedThreshold, 100));
+  }
+
+  public Integer getPerformanceUnstableThreshold() {
+    return performanceUnstableThreshold;
+  }
+
+  public void setPerformanceUnstableThreshold(final Integer performanceUnstableThreshold) {
+    this.performanceUnstableThreshold = Math.max(0, Math.min(performanceUnstableThreshold, 100));
   }
 }

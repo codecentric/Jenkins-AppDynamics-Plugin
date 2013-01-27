@@ -89,19 +89,6 @@ public class BuildActionResultsDisplay implements ModelObject {
   }
 
   /**
-   * <p>
-   * Verify if the AppDynamicsReport exist the AppDynamicsReportName must to be like it
-   * is in the build
-   * </p>
-   *
-   * @return boolean
-   */
-  public boolean isFailed() {
-    return getAppDynamicsReport() == null;
-  }
-
-
-  /**
    * Graph of metric points over time.
    */
   public void doSummarizerGraph(final StaplerRequest request,

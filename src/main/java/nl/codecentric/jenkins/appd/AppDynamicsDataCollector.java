@@ -36,6 +36,10 @@ public class AppDynamicsDataCollector {
     this.build = build;
   }
 
+  public static String[] getAvailableMetricPaths() {
+    return METRIC_PATHS;
+  }
+
   /** Parses the specified reports into {@link AppDynamicsReport}s. */
   public AppDynamicsReport createReportFromMeasurements() {
     long buildStartTime = build.getRootBuild().getTimeInMillis();
@@ -47,7 +51,9 @@ public class AppDynamicsDataCollector {
     AppDynamicsReport adReport = new AppDynamicsReport(buildStartTime, durationInMinutes);
     for (String metricPath : METRIC_PATHS) {
       MetricData metric = restConnection.fetchMetricData(metricPath, durationInMinutes);
-      adReport.addMetrics(metric);
+      if (adReport != null) {
+        adReport.addMetrics(metric);
+      }
     }
 
     return adReport;

@@ -66,7 +66,7 @@ public class AppDynamicsProjectAction implements Action {
         continue;
       }
 
-      testList.add("report " + label.toString() + " errors: " + report.errorPercent());
+      testList.add("report " + label.toString() + " errors: ");
     }
 
     return testList;
