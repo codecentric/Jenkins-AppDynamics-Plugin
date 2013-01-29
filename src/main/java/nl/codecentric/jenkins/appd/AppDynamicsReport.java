@@ -44,7 +44,7 @@ public class AppDynamicsReport {
     return new ArrayList<MetricData>(keyedMetricDataMap.values());
   }
 
-  public long getAverageForMetric(final String metricKey) {
+  public double getAverageForMetric(final String metricKey) {
     final MetricData selectedMetric = getMetricByKey(metricKey);
 
     long calculatedSum = 0;
@@ -53,7 +53,7 @@ public class AppDynamicsReport {
     }
 
     final int numberOfMeasurements = selectedMetric.getMetricValues().size();
-    long result = -1;
+    double result = -1;
     if (numberOfMeasurements > 0) {
       result = calculatedSum / numberOfMeasurements;
     }

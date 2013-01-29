@@ -33,8 +33,8 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNA
 public class AppDynamicsResultsPublisher extends Recorder {
 
   private static final String DEFAULT_USERNAME = "username@customer1";
-  private static final int DEFAULT_THRESHOLD_UNSTABLE = 90;
-  private static final int DEFAULT_THRESHOLD_FAILED = 70;
+  private static final int DEFAULT_THRESHOLD_UNSTABLE = 80;
+  private static final int DEFAULT_THRESHOLD_FAILED = 65;
 
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
@@ -153,13 +153,14 @@ public class AppDynamicsResultsPublisher extends Recorder {
   private String password = "";
   private String applicationName = "";
   private String thresholdMetric;
+  private Boolean lowerIsBetter = true;
   private Integer performanceFailedThreshold;
   private Integer performanceUnstableThreshold;
 
   @DataBoundConstructor
   public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String username,
                                      final String password, final String applicationName,
-                                     final String thresholdMetric,
+                                     final String thresholdMetric, final Boolean lowerIsBetter,
                                      final Integer performanceFailedThreshold,
                                      final Integer performanceUnstableThreshold) {
     setAppdynamicsRestUri(appdynamicsRestUri);
@@ -167,6 +168,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
     setPassword(password);
     setApplicationName(applicationName);
     setThresholdMetric(thresholdMetric);
+    setLowerIsBetter(lowerIsBetter);
     setPerformanceFailedThreshold(performanceFailedThreshold);
     setPerformanceUnstableThreshold(performanceUnstableThreshold);
   }
@@ -210,7 +212,8 @@ public class AppDynamicsResultsPublisher extends Recorder {
     build.addAction(buildAction);
 
     logger.println("Ready building AppDynamics report");
-    logger.println("Verifying for improving or degrading performance, main metric: " + thresholdMetric);
+    logger.println("Verifying for improving or degrading performance, main metric: " + thresholdMetric +
+        " where lower is better = " + lowerIsBetter);
 
     try {
       // Verify if the necessary metric is successfully fetched.
@@ -243,23 +246,25 @@ public class AppDynamicsResultsPublisher extends Recorder {
     // mark the build as unstable or failure depending on the outcome.
     List<AppDynamicsReport> previousReportList = getListOfPreviousReports(build, report.getTimestamp());
     logger.println("Number of old reports located for average: " + previousReportList.size());
-    long calculatedAverage = calculateAverageBasedOnPreviousReports(previousReportList);
-    logger.println("Calculated average from previous reports: " + calculatedAverage);
+    double averageOverTime = calculateAverageBasedOnPreviousReports(previousReportList);
+    logger.println("Calculated average from previous reports: " + averageOverTime);
 
-    long currentAverage = report.getAverageForMetric(thresholdMetric);
-    logger.println("Current average: " + calculatedAverage);
-    long performanceComparedToPrev = (currentAverage / calculatedAverage) * 100;
-    logger.println("Current average as percentage of total average: " + performanceComparedToPrev);
+    double currentReportAverage = report.getAverageForMetric(thresholdMetric);
+    logger.println("Current report average: " + currentReportAverage);
+    double performanceAsPercentageOfAverage;
+    if (lowerIsBetter) {
+      performanceAsPercentageOfAverage = (averageOverTime / currentReportAverage) * 100;
+    } else {
+      performanceAsPercentageOfAverage = (currentReportAverage / averageOverTime) * 100;
+    }
+    logger.println("Current average as percentage of total average: " + performanceAsPercentageOfAverage + "%");
 
-    double thresholdTolerance = 0.00000001;
-
-    Result result = Result.SUCCESS;
+    Result result;
     if (performanceFailedThreshold >= 0
-        && performanceComparedToPrev - performanceFailedThreshold < thresholdTolerance) {
-      result = Result.FAILURE;
+        && performanceAsPercentageOfAverage - performanceFailedThreshold < 0) {
       build.setResult(Result.FAILURE);
     } else if (performanceUnstableThreshold >= 0
-        && performanceComparedToPrev - performanceUnstableThreshold < thresholdTolerance) {
+        && performanceAsPercentageOfAverage - performanceUnstableThreshold < 0) {
       result = Result.UNSTABLE;
       if (result.isWorseThan(build.getResult())) {
         build.setResult(result);
@@ -267,24 +272,24 @@ public class AppDynamicsResultsPublisher extends Recorder {
     }
 
     logger.println("Metric: " + thresholdMetric
-        + " reported performance compared to average of " + performanceComparedToPrev
+        + " reported performance compared to average of " + performanceAsPercentageOfAverage
         + "% . Build status is: " + build.getResult());
 
     return true;
   }
 
-  private long calculateAverageBasedOnPreviousReports(final List<AppDynamicsReport> reports) {
-    long calculatedSum = 0;
+  private double calculateAverageBasedOnPreviousReports(final List<AppDynamicsReport> reports) {
+    double calculatedSum = 0;
     int numberOfMeasurements = 0;
     for (AppDynamicsReport report : reports) {
-      long value = report.getAverageForMetric(thresholdMetric);
+      double value = report.getAverageForMetric(thresholdMetric);
       if (value >= 0) {
         calculatedSum += value;
         numberOfMeasurements++;
       }
     }
 
-    long result = -1;
+    double result = -1;
     if (numberOfMeasurements > 0) {
       result = calculatedSum / numberOfMeasurements;
     }
@@ -349,6 +354,14 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
   public void setThresholdMetric(String thresholdMetric) {
     this.thresholdMetric = thresholdMetric;
+  }
+
+  public Boolean getLowerIsBetter() {
+    return lowerIsBetter;
+  }
+
+  public void setLowerIsBetter(Boolean lowerIsBetter) {
+    this.lowerIsBetter = lowerIsBetter;
   }
 
   public Integer getPerformanceFailedThreshold() {

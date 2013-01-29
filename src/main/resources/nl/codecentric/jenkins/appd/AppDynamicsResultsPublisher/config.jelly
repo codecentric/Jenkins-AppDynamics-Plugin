@@ -24,6 +24,9 @@
   <f:entry field="thresholdMetric" title="${%appdynamics.threshold.metric.title}" description="${%appdynamics.threshold.metric.description}">
     <f:select />
   </f:entry>
+  <f:entry title="${%appdynamics.threshold.lower.title}">
+    <f:checkbox field="lowerIsBetter" default="true" />
+  </f:entry>
 
   <f:entry title="${%performance.threshold.title}" description="${%performance.threshold.description}">
     <table width="250px">
