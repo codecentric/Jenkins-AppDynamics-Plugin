@@ -308,7 +308,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
         continue;
       }
       final AppDynamicsReport report = performanceBuildAction.getBuildActionResultsDisplay().getAppDynamicsReport();
-      if (report != null && report.getTimestamp() != currentTimestamp) {
+      if (report != null && (report.getTimestamp() != currentTimestamp || builds.size() == 1)) {
         previousReports.add(report);
       }
     }
