@@ -241,10 +241,15 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
 
     // mark the build as unstable or failure depending on the outcome.
-    long calculatedAverage = calculateAverageBasedOnPreviousReports(
-        getListOfPreviousReports(build, report.getTimestamp()));
+    List<AppDynamicsReport> previousReportList = getListOfPreviousReports(build, report.getTimestamp());
+    logger.println("Number of old reports located for average: " + previousReportList.size());
+    long calculatedAverage = calculateAverageBasedOnPreviousReports(previousReportList);
+    logger.println("Calculated average from previous reports: " + calculatedAverage);
 
-    long performanceComparedToPrev = (report.getAverageForMetric(thresholdMetric) / calculatedAverage) * 100;
+    long currentAverage = report.getAverageForMetric(thresholdMetric);
+    logger.println("Current average: " + calculatedAverage);
+    long performanceComparedToPrev = (currentAverage / calculatedAverage) * 100;
+    logger.println("Current average as percentage of total average: " + performanceComparedToPrev);
 
     double thresholdTolerance = 0.00000001;
 
