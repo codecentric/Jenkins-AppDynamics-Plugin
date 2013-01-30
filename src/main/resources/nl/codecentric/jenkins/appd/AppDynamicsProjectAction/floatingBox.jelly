@@ -2,16 +2,11 @@
   <j:if test="${from.isTrendVisibleOnProjectDashboard()}">
     <div class="test-trend-caption">
       ${%performance.trend.caption}
-      <br/>
-      <div>
-      </div>
-      <br/>
+      <br />
+      <div></div>
+      <br />
       <a href="appdynamics-dashboard/">
-        <img src="appdynamics-dashboard/respondingTimeGraph"/>
-      </a>
-      <br/>
-      <a href="appdynamics-dashboard/">
-        <img src="appdynamics-dashboard/errorsGraph"/>
+        <img class="trend" src="appdynamics-dashboard/summarizerGraphMainMetric"/>
       </a>
     </div>
   </j:if>
