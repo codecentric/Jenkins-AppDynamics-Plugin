@@ -6,8 +6,6 @@ import hudson.model.Action;
 import hudson.util.ChartUtil;
 import hudson.util.DataSetBuilder;
 import hudson.util.Graph;
-import nl.codecentric.jenkins.appd.rest.types.MetricData;
-import nl.codecentric.jenkins.appd.rest.types.MetricValues;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
@@ -19,6 +17,8 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import static nl.codecentric.jenkins.appd.util.LocalMessages.PROJECTACTION_DISPLAYNAME;
@@ -30,20 +30,23 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PROJECTACTION_DISPL
  */
 public class AppDynamicsProjectAction implements Action {
 
-  /** Logger. */
+  /**
+   * Logger.
+   */
   private static final Logger LOGGER = Logger.getLogger(AppDynamicsProjectAction.class.getName());
   private static final long serialVersionUID = 1L;
 
   private static final String PLUGIN_NAME = "appdynamics-dashboard";
 
-  public final AbstractProject<?, ?> project;
+  private final AbstractProject<?, ?> project;
   private final String mainMetricKey;
+  private final String[] allMetricKeys;
 
-  public AppDynamicsProjectAction(final AbstractProject project, final String mainMetricKey) {
+  public AppDynamicsProjectAction(final AbstractProject project, final String mainMetricKey,
+                                  final String[] allMetricKeys) {
     this.project = project;
     this.mainMetricKey = mainMetricKey;
-    // TODO Add also list of all metrics fetched from AD, so we know which metrics to plot on
-    // project page.
+    this.allMetricKeys = allMetricKeys;
   }
 
   public String getDisplayName() {
@@ -77,7 +80,6 @@ public class AppDynamicsProjectAction implements Action {
       }
 
       adReportList.add(report);
-      // TODO Revert the order of reports, this is backwards now.
     }
 
     return adReportList;
@@ -91,20 +93,18 @@ public class AppDynamicsProjectAction implements Action {
    * Graph of metric points over time.
    */
   public void doSummarizerGraphMainMetric(final StaplerRequest request,
-                                final StaplerResponse response) throws IOException {
-    final List<Double> averagesFromReports = getAveragesFromAllReports(getExistingReportsList(), mainMetricKey);
+                                          final StaplerResponse response) throws IOException {
+    final Map<ChartUtil.NumberOnlyBuildLabel, Double> averagesFromReports =
+        getAveragesFromAllReports(getExistingReportsList(), mainMetricKey);
 
     final Graph graph = new GraphImpl(mainMetricKey + " Overall Graph") {
 
-      protected DataSetBuilder<String, Integer> createDataSet() {
-        DataSetBuilder<String, Integer> dataSetBuilder = new DataSetBuilder<String, Integer>();
+      protected DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> createDataSet() {
+        DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
+            new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
 
-        int i = 1;
-        for (Double value : averagesFromReports) {
-          // TODO Instead of numbers, make it possible to add build number, see:
-//          ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(currentBuild);
-
-          dataSetBuilder.add(value, mainMetricKey, i++);
+        for (ChartUtil.NumberOnlyBuildLabel label : averagesFromReports.keySet()) {
+          dataSetBuilder.add(averagesFromReports.get(label), mainMetricKey, label);
         }
 
         return dataSetBuilder;
@@ -127,7 +127,7 @@ public class AppDynamicsProjectAction implements Action {
       return metricKey.substring(metricKey.lastIndexOf("|") + 1);
     }
 
-    protected abstract DataSetBuilder<String, Integer> createDataSet();
+    protected abstract DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> createDataSet();
 
     protected JFreeChart createGraph() {
       final CategoryDataset dataset = createDataSet().build();
@@ -148,21 +148,19 @@ public class AppDynamicsProjectAction implements Action {
     }
   }
 
-  private List<Double> getAveragesFromAllReports(final List<AppDynamicsReport> reports, final String metricKey) {
-    List<Double> averages = new ArrayList<Double>();
+  private Map<ChartUtil.NumberOnlyBuildLabel, Double> getAveragesFromAllReports(
+      final List<AppDynamicsReport> reports, final String metricKey) {
+    Map<ChartUtil.NumberOnlyBuildLabel, Double> averages = new TreeMap<ChartUtil.NumberOnlyBuildLabel, Double>();
     for (AppDynamicsReport report : reports) {
       double value = report.getAverageForMetric(metricKey);
       if (value >= 0) {
-        averages.add(value);
+        ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(report.getBuild());
+        averages.put(label, value);
       }
     }
 
     return averages;
   }
-
-
-
-
 
 
   public List<String> getPerformanceReportList() {

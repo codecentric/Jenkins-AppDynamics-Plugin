@@ -180,7 +180,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
   @Override
   public Action getProjectAction(AbstractProject<?, ?> project) {
-    return new AppDynamicsProjectAction(project, thresholdMetric);
+    return new AppDynamicsProjectAction(project, thresholdMetric, AppDynamicsDataCollector.getAvailableMetricPaths());
   }
 
   public BuildStepMonitor getRequiredMonitorService() {
