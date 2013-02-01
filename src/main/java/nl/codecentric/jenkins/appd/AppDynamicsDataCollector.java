@@ -30,10 +30,13 @@ public class AppDynamicsDataCollector {
 
   private final RestConnection restConnection;
   private final AbstractBuild<?, ?> build;
+  private final int minimumDurationInMinutes;
 
-  public AppDynamicsDataCollector(final RestConnection connection, final AbstractBuild<?, ?> build) {
+  public AppDynamicsDataCollector(final RestConnection connection, final AbstractBuild<?, ?> build,
+                                  final int minimumDurationInMinutes) {
     this.restConnection = connection;
     this.build = build;
+    this.minimumDurationInMinutes = minimumDurationInMinutes;
   }
 
   public static String[] getAvailableMetricPaths() {
@@ -64,8 +67,8 @@ public class AppDynamicsDataCollector {
     long duration = System.currentTimeMillis() - buildStartTime;
 
     int durationInMinutes = (int) (duration / (1000*60));
-    if (durationInMinutes < 10) {
-      durationInMinutes = 10;
+    if (durationInMinutes < minimumDurationInMinutes) {
+      durationInMinutes = minimumDurationInMinutes;
     }
 
     return durationInMinutes;

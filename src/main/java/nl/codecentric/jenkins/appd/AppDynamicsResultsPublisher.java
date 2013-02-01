@@ -33,8 +33,10 @@ import static nl.codecentric.jenkins.appd.util.LocalMessages.PUBLISHER_DISPLAYNA
 public class AppDynamicsResultsPublisher extends Recorder {
 
   private static final String DEFAULT_USERNAME = "username@customer1";
+  private static final String DEFAULT_THRESHOLD_METRIC = "Overall Application Performance|Average Response Time (ms)";
   private static final int DEFAULT_THRESHOLD_UNSTABLE = 80;
   private static final int DEFAULT_THRESHOLD_FAILED = 65;
+  private static final int DEFAULT_MINIMUM_MEASURE_TIME_MINUTES = 10;
 
   public static class DescriptorImpl extends BuildStepDescriptor<Publisher> {
 
@@ -55,6 +57,10 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
     public String getDefaultUsername() {
       return DEFAULT_USERNAME;
+    }
+
+    public int getDefaultMinimumMeasureTimeInMinutes() {
+      return DEFAULT_MINIMUM_MEASURE_TIME_MINUTES;
     }
 
     public int getDefaultUnstableThreshold() {
@@ -152,15 +158,17 @@ public class AppDynamicsResultsPublisher extends Recorder {
   private String username = "";
   private String password = "";
   private String applicationName = "";
-  private String thresholdMetric;
+  private String thresholdMetric = DEFAULT_THRESHOLD_METRIC;
   private Boolean lowerIsBetter = true;
-  private Integer performanceFailedThreshold;
-  private Integer performanceUnstableThreshold;
+  private Integer minimumMeasureTimeInMinutes = DEFAULT_MINIMUM_MEASURE_TIME_MINUTES;
+  private Integer performanceFailedThreshold = DEFAULT_THRESHOLD_FAILED;
+  private Integer performanceUnstableThreshold = DEFAULT_THRESHOLD_UNSTABLE;
 
   @DataBoundConstructor
   public AppDynamicsResultsPublisher(final String appdynamicsRestUri, final String username,
                                      final String password, final String applicationName,
                                      final String thresholdMetric, final Boolean lowerIsBetter,
+                                     final Integer minimumMeasureTimeInMinutes,
                                      final Integer performanceFailedThreshold,
                                      final Integer performanceUnstableThreshold) {
     setAppdynamicsRestUri(appdynamicsRestUri);
@@ -169,6 +177,7 @@ public class AppDynamicsResultsPublisher extends Recorder {
     setApplicationName(applicationName);
     setThresholdMetric(thresholdMetric);
     setLowerIsBetter(lowerIsBetter);
+    setMinimumMeasureTimeInMinutes(minimumMeasureTimeInMinutes);
     setPerformanceFailedThreshold(performanceFailedThreshold);
     setPerformanceUnstableThreshold(performanceUnstableThreshold);
   }
@@ -205,7 +214,8 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
     logger.println("Connection successful, continue to fetch measurements from AppDynamics Controller ...");
 
-    AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build);
+    AppDynamicsDataCollector dataCollector = new AppDynamicsDataCollector(connection, build,
+        minimumMeasureTimeInMinutes);
     AppDynamicsReport report = dataCollector.createReportFromMeasurements();
 
     AppDynamicsBuildAction buildAction = new AppDynamicsBuildAction(build, report);
@@ -353,7 +363,11 @@ public class AppDynamicsResultsPublisher extends Recorder {
   }
 
   public void setThresholdMetric(String thresholdMetric) {
-    this.thresholdMetric = thresholdMetric;
+    if (thresholdMetric == null || thresholdMetric.isEmpty()) {
+      this.thresholdMetric = DEFAULT_THRESHOLD_METRIC;
+    } else {
+      this.thresholdMetric = thresholdMetric;
+    }
   }
 
   public Boolean getLowerIsBetter() {
@@ -362,6 +376,15 @@ public class AppDynamicsResultsPublisher extends Recorder {
 
   public void setLowerIsBetter(Boolean lowerIsBetter) {
     this.lowerIsBetter = lowerIsBetter;
+  }
+
+  public Integer getMinimumMeasureTimeInMinutes() {
+    return minimumMeasureTimeInMinutes;
+  }
+
+  public void setMinimumMeasureTimeInMinutes(final Integer minimumMeasureTimeInMinutes) {
+    this.minimumMeasureTimeInMinutes = Math.max(DEFAULT_MINIMUM_MEASURE_TIME_MINUTES,
+        Math.min(minimumMeasureTimeInMinutes, 1440));
   }
 
   public Integer getPerformanceFailedThreshold() {

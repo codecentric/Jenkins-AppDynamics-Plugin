@@ -24,7 +24,7 @@
 
             </td>
             <td width="50%">
-              <img class="trend" src="./summarizerGraph?width=400&amp;height=300&amp;metricDataKey=${metricData.metricPath}" width="400" height="300" />
+              <img class="trend" src="./summarizerGraph?width=600&amp;height=440&amp;metricDataKey=${metricData.metricPath}" width="600" height="440" />
             </td>
           </tr>
         </table>
