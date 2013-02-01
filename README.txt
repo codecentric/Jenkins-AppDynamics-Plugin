@@ -1,7 +1,5 @@
 This plugin is written for integrating AppDynamics with Jenkins.
 
-== To be open-sourced when first stable version is reached ==
-
 AppDynamics provides detailed information about any application and this data can be queried via the REST
 interface. This plugin tries to fetch the information related to a build, e.g. after running JMeter, and
 visualizes it within Jenkins.
