@@ -3,34 +3,18 @@
   <l:layout title="trendlayout" css="/plugin/appdynamics-dashboard/css/style.css">
     <st:include it="${it.project}" page="sidepanel.jelly"/>
     <l:main-panel>
-      <h1>${%performance.trend.caption}</h1>
+      <h1>${%appdynamics.trend.caption}</h1>
       <div>
-        <a href="../lastBuild/performance/">${%last.report.caption}</a>
+        <a href="../lastBuild/appdynamics-dashboard/">${%last.report.caption}</a>
       </div>
       <div>
-        <j:forEach var="performanceReport" items="${it.performanceReportList}">
 
-        <div class="title">
-          <h1>
-            <center>${%Test file}: ${performanceReport}</center>
-          </h1>
-        </div>
-        <center>
-          <!--
-          <a href="./respondingTimeGraph?width=900&amp;height=550&amp;performanceReportPosition=${performanceReport}"
-             title="${%Click for larger image}">
-            <img class="trend"
-                 src="./respondingTimeGraph?width=300&amp;height=225&amp;performanceReportPosition=${performanceReport}"
-                 width="300" height="225"/>
-          </a>
-          <a href="./errorsGraph?width=900&amp;height=550&amp;performanceReportPosition=${performanceReport}"
-             title="${%Click for larger image}">
-            <img class="trend"
-                 src="./errorsGraph?width=300&amp;height=225&amp;performanceReportPosition=${performanceReport}"
-                 width="300" height="225"/>
-          </a>
-          -->
-        </center>
+        <j:set var="metricKeyList" value="${it.getAvailableMetricKeys()}"/>
+        <j:forEach var="metricKey" items="${metricKeyList}">
+          <center>
+            <img class="trend" src="./summarizerGraphForMetric?width=600&amp;height=440&amp;metricDataKey=${metricKey}" width="600" height="440" />
+          </center>
+          <br />
         </j:forEach>
       </div>
     </l:main-panel>

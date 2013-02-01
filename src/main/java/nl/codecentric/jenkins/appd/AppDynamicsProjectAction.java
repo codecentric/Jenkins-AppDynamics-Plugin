@@ -15,10 +15,8 @@ import org.kohsuke.stapler.StaplerResponse;
 
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import static nl.codecentric.jenkins.appd.util.LocalMessages.PROJECTACTION_DISPLAYNAME;
@@ -61,32 +59,20 @@ public class AppDynamicsProjectAction implements Action {
     return "graph.gif";
   }
 
-  public List<AppDynamicsReport> getExistingReportsList() {
-    final List<AppDynamicsReport> adReportList = new ArrayList<AppDynamicsReport>();
-
-    if (null == this.project) {
-      return adReportList;
-    }
-
-    final List<? extends AbstractBuild<?, ?>> builds = project.getBuilds();
-    for (AbstractBuild<?, ?> currentBuild : builds) {
-      final AppDynamicsBuildAction performanceBuildAction = currentBuild.getAction(AppDynamicsBuildAction.class);
-      if (performanceBuildAction == null) {
-        continue;
-      }
-      final AppDynamicsReport report = performanceBuildAction.getBuildActionResultsDisplay().getAppDynamicsReport();
-      if (report == null) {
-        continue;
-      }
-
-      adReportList.add(report);
-    }
-
-    return adReportList;
+  /**
+   * Method necessary to get the side-panel included in the Jelly file
+   * @return this {@link AbstractProject}
+   */
+  public AbstractProject<?, ?> getProject() {
+    return this.project;
   }
 
   public boolean isTrendVisibleOnProjectDashboard() {
-    return getPerformanceReportList().size() >= 1;
+    return getExistingReportsList().size() >= 1;
+  }
+
+  public List<String> getAvailableMetricKeys() {
+    return Arrays.asList(allMetricKeys);
   }
 
   /**
@@ -114,6 +100,31 @@ public class AppDynamicsProjectAction implements Action {
     graph.doPng(request, response);
   }
 
+  /**
+   * Graph of metric points over time, metric to plot set as request parameter.
+   */
+  public void doSummarizerGraphForMetric(final StaplerRequest request,
+                                          final StaplerResponse response) throws IOException {
+    final String metricKey = request.getParameter("metricDataKey");
+    final Map<ChartUtil.NumberOnlyBuildLabel, Double> averagesFromReports =
+        getAveragesFromAllReports(getExistingReportsList(), metricKey);
+
+    final Graph graph = new GraphImpl(metricKey + " Overall Graph") {
+
+      protected DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> createDataSet() {
+        DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel> dataSetBuilder =
+            new DataSetBuilder<String, ChartUtil.NumberOnlyBuildLabel>();
+
+        for (ChartUtil.NumberOnlyBuildLabel label : averagesFromReports.keySet()) {
+          dataSetBuilder.add(averagesFromReports.get(label), metricKey, label);
+        }
+
+        return dataSetBuilder;
+      }
+    };
+
+    graph.doPng(request, response);
+  }
 
   private abstract class GraphImpl extends Graph {
     private final String graphTitle;
@@ -148,6 +159,30 @@ public class AppDynamicsProjectAction implements Action {
     }
   }
 
+  private List<AppDynamicsReport> getExistingReportsList() {
+    final List<AppDynamicsReport> adReportList = new ArrayList<AppDynamicsReport>();
+
+    if (null == this.project) {
+      return adReportList;
+    }
+
+    final List<? extends AbstractBuild<?, ?>> builds = project.getBuilds();
+    for (AbstractBuild<?, ?> currentBuild : builds) {
+      final AppDynamicsBuildAction performanceBuildAction = currentBuild.getAction(AppDynamicsBuildAction.class);
+      if (performanceBuildAction == null) {
+        continue;
+      }
+      final AppDynamicsReport report = performanceBuildAction.getBuildActionResultsDisplay().getAppDynamicsReport();
+      if (report == null) {
+        continue;
+      }
+
+      adReportList.add(report);
+    }
+
+    return adReportList;
+  }
+
   private Map<ChartUtil.NumberOnlyBuildLabel, Double> getAveragesFromAllReports(
       final List<AppDynamicsReport> reports, final String metricKey) {
     Map<ChartUtil.NumberOnlyBuildLabel, Double> averages = new TreeMap<ChartUtil.NumberOnlyBuildLabel, Double>();
@@ -161,28 +196,4 @@ public class AppDynamicsProjectAction implements Action {
 
     return averages;
   }
-
-
-  public List<String> getPerformanceReportList() {
-    List<String> testList = new ArrayList<String>();
-
-    List<? extends AbstractBuild<?, ?>> builds = project.getBuilds();
-
-    for (AbstractBuild<?, ?> currentBuild : builds) {
-      ChartUtil.NumberOnlyBuildLabel label = new ChartUtil.NumberOnlyBuildLabel(currentBuild);
-      AppDynamicsBuildAction performanceBuildAction = currentBuild.getAction(AppDynamicsBuildAction.class);
-      if (performanceBuildAction == null) {
-        continue;
-      }
-      AppDynamicsReport report = performanceBuildAction.getBuildActionResultsDisplay().getAppDynamicsReport();
-      if (report == null) {
-        continue;
-      }
-
-      testList.add("report " + label.toString() + " errors: ");
-    }
-
-    return testList;
-  }
-
 }
