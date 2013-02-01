@@ -19,8 +19,8 @@ import java.util.logging.Logger;
 public class AppDynamicsDataCollector {
   private static final Logger LOG = Logger.getLogger(AppDynamicsDataCollector.class.getName());
   private static final String[] METRIC_PATHS = {
-      "Overall Application Performance|Calls per Minute",
       "Overall Application Performance|Average Response Time (ms)",
+      "Overall Application Performance|Calls per Minute",
       "Overall Application Performance|Normal Average Response Time (ms)",
       "Overall Application Performance|Number of Slow Calls",
       "Overall Application Performance|Number of Very Slow Calls",
