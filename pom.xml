@@ -38,7 +38,7 @@
   <packaging>hpi</packaging>
 
   <name>AppDynamics Dashboard Plugin for Jenkins</name>
-  <url>http://blog.codecentric.nl/</url>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/AppDynamics+Plugin/</url>
 
   <licenses>
     <license>
@@ -57,9 +57,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:ssh://github.com/jenkinsci/Jenkins_AppDynamics_plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/Jenkins_AppDynamics_plugin.git</developerConnection>
-    <url>https://github.com/jenkinsci/Jenkins_AppDynamics_plugin</url>
+    <connection>scm:git:ssh://github.com/jenkinsci/appdynamics-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/appdynamics-plugin.git</developerConnection>
+    <url>https://github.com/jenkinsci/appdynamics-plugin</url>
   </scm>
 
   <properties>
@@ -70,28 +70,6 @@
 
     <jersey.client.version>1.16</jersey.client.version>
     <joda.time.version>2.1</joda.time.version>
-    <!-- define all plugin versions -->
-    <maven.version>3.0.4</maven.version>
-    <maven-antrun-plugin.version>1.6</maven-antrun-plugin.version>
-    <maven-assembly-plugin.version>2.2</maven-assembly-plugin.version>
-    <maven-checkstyle-plugin.version>2.6</maven-checkstyle-plugin.version>
-    <maven-clean-plugin.version>2.4.1</maven-clean-plugin.version>
-    <maven-compiler-plugin.version>2.3.2</maven-compiler-plugin.version>
-    <maven-dependency-plugin.version>2.1</maven-dependency-plugin.version>
-    <maven-help-plugin.version>2.1.1</maven-help-plugin.version>
-    <maven-install-plugin.version>2.3.1</maven-install-plugin.version>
-    <maven-javadoc-plugin.version>2.7</maven-javadoc-plugin.version>
-    <maven-jar-plugin.version>2.3.1</maven-jar-plugin.version>
-    <maven-plugin-plugin.version>2.4.3</maven-plugin-plugin.version>
-    <maven-pmd-plugin.version>2.5</maven-pmd-plugin.version>
-    <maven-release-plugin.version>2.1</maven-release-plugin.version>
-    <maven-resources-plugin.version>2.4.3</maven-resources-plugin.version>
-    <maven-source-plugin.version>2.1.2</maven-source-plugin.version>
-    <maven-surefire-plugin.version>2.7.2</maven-surefire-plugin.version>
-    <maven-surefire-report-plugin.version>2.7.2</maven-surefire-report-plugin.version>
-    <maven-war-plugin.version>2.1.1</maven-war-plugin.version>
-    <cobertura-maven-plugin.version>2.4</cobertura-maven-plugin.version>
-    <findbugs-maven-plugin.version>2.3.1</findbugs-maven-plugin.version>
   </properties>
   
   <build>
@@ -111,69 +89,9 @@
             <showWarnings>true</showWarnings>
           </configuration>
         </plugin>
-        <plugin>
-          <artifactId>maven-release-plugin</artifactId>
-          <version>${maven-release-plugin.version}</version>
-          <configuration>
-            <allowTimestampedSnapshots>true</allowTimestampedSnapshots>
-            <autoVersionSubmodules>true</autoVersionSubmodules>
-            <goals>clean deploy</goals>
-            <preparationGoals>clean deploy</preparationGoals>
-            <releaseProfiles>release</releaseProfiles>
-          </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven-surefire-plugin.version}</version>
-          <configuration>
-            <parallel>methods</parallel>
-            <testFailureIgnore>true</testFailureIgnore>
-            <threadCount>4</threadCount>
-          </configuration>
-        </plugin>
       </plugins>
     </pluginManagement>
   </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <artifactId>maven-changelog-plugin</artifactId>
-        <version>${maven-changelog-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-checkstyle-plugin</artifactId>
-        <version>${maven-checkstyle-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven-javadoc-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-pmd-plugin</artifactId>
-        <version>${maven-pmd-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <artifactId>maven-surefire-report-plugin</artifactId>
-        <version>${maven-surefire-report-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <version>${cobertura-maven-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>findbugs-maven-plugin</artifactId>
-        <version>${findbugs-maven-plugin.version}</version>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jdepend-maven-plugin</artifactId>
-        <version>${jdepend-maven-plugin.version}</version>
-      </plugin>
-    </plugins>
-  </reporting>
 
   <dependencies>
     <dependency>
