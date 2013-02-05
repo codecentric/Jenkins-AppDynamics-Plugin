@@ -2,38 +2,39 @@
          xmlns:f="/lib/form">
 
   <f:entry title="${%appdynamics.rest.uri.title}" description="${%appdynamics.rest.uri.description}">
-    <f:textbox field="appdynamicsRestUri" />
+    <f:textbox field="appdynamicsRestUri"/>
   </f:entry>
 
   <f:entry title="${%appdynamics.rest.username.title}" description="${%appdynamics.rest.username.description}">
-    <f:textbox field="username" default="${descriptor.defaultUsername}" />
+    <f:textbox field="username" default="${descriptor.defaultUsername}"/>
   </f:entry>
 
   <f:entry title="${%appdynamics.rest.password.title}" description="${%appdynamics.rest.password.description}">
-    <f:password field="password" />
+    <f:password field="password"/>
   </f:entry>
 
   <f:entry title="${%appdynamics.application.name.title}" description="${%appdynamics.application.name.description}">
-    <f:textbox field="applicationName" />
+    <f:textbox field="applicationName"/>
   </f:entry>
 
   <f:validateButton
       title="${%appdynamics.connection.test.title}" progress="${%appdynamics.connection.test.progress}"
-      method="testAppDynamicsConnection" with="appdynamicsRestUri,username,password,applicationName" />
+      method="testAppDynamicsConnection" with="appdynamicsRestUri,username,password,applicationName"/>
 
-  <f:section title="Advanced Options">
+  <f:section title="Advanced AppDynamics Integration Options">
     <f:advanced>
 
-      <f:entry field="thresholdMetric" title="${%appdynamics.threshold.metric.title}" description="${%appdynamics.threshold.metric.description}">
-        <f:select />
+      <f:entry field="thresholdMetric" title="${%appdynamics.threshold.metric.title}"
+               description="${%appdynamics.threshold.metric.description}">
+        <f:select/>
       </f:entry>
       <f:entry title="${%appdynamics.threshold.lower.title}">
-        <f:checkbox field="lowerIsBetter" default="true" />
+        <f:checkbox field="lowerIsBetter" default="true"/>
       </f:entry>
 
       <f:entry title="${%appdynamics.minmeasuretime.title}" description="${%appdynamics.minmeasuretime.description}">
         <f:number field="minimumMeasureTimeInMinutes" default="${descriptor.defaultMinimumMeasureTimeInMinutes}"
-                  min="10" max="1440" />
+                  min="10" max="1440"/>
       </f:entry>
 
       <f:entry title="${%appdynamics.threshold.title}" description="${%appdynamics.threshold.description}">
@@ -55,11 +56,13 @@
             <tr>
               <td style="vertical-align:middle">${%Thresholds}:</td>
               <td>
-                <f:number field="performanceUnstableThreshold" default="${descriptor.defaultUnstableThreshold}" min="0" max="100" />
+                <f:number field="performanceUnstableThreshold" default="${descriptor.defaultUnstableThreshold}" min="0"
+                          max="100"/>
               </td>
               <td>%</td>
               <td>
-                <f:number field="performanceFailedThreshold" default="${descriptor.defaultFailedThreshold}" min="0" max="100" />
+                <f:number field="performanceFailedThreshold" default="${descriptor.defaultFailedThreshold}" min="0"
+                          max="100"/>
               </td>
               <td>%</td>
             </tr>
