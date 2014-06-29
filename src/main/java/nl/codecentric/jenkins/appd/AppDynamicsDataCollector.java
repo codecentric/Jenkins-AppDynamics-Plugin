@@ -53,8 +53,8 @@ public class AppDynamicsDataCollector {
 
     AppDynamicsReport adReport = new AppDynamicsReport(buildStartTime, durationInMinutes);
     for (String metricPath : METRIC_PATHS) {
-      MetricData metric = restConnection.fetchMetricData(metricPath, durationInMinutes);
-      if (adReport != null) {
+      final MetricData metric = restConnection.fetchMetricData(metricPath, durationInMinutes);
+      if (adReport != null && metric != null) {
         adReport.addMetrics(metric);
       }
     }
