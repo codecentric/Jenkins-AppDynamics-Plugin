@@ -4,7 +4,7 @@
   The MIT License
 
   Copyright (c) 2012, codecentric
-  Miel Donkers 
+  Miel Donkers
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,11 @@
   <parent>
     <groupId>org.jenkins-ci.plugins</groupId>
     <artifactId>plugin</artifactId>
-    <version>1.489</version><!-- which version of Jenkins is this plugin built against? -->
+    <version>1.570</version><!-- which version of Jenkins is this plugin built against? -->
   </parent>
 
   <artifactId>appdynamics-dashboard</artifactId>
-  <version>1.0.4-SNAPSHOT</version>
+  <version>1.0.5-SNAPSHOT</version>
   <packaging>hpi</packaging>
 
   <name>AppDynamics Dashboard Plugin for Jenkins</name>
@@ -71,7 +71,7 @@
     <jersey.client.version>1.16</jersey.client.version>
     <joda.time.version>2.1</joda.time.version>
   </properties>
-  
+
   <build>
     <pluginManagement>
       <plugins>
@@ -91,6 +91,21 @@
         </plugin>
       </plugins>
     </pluginManagement>
+    <!--
+    <plugins>
+      <plugin>
+        <artifactId>maven-release-plugin</artifactId>
+        <version>2.4.2</version>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.scm</groupId>
+            <artifactId>maven-scm-provider-gitexe</artifactId>
+            <version>1.8.1</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+    </plugins>
+    -->
   </build>
 
   <dependencies>
