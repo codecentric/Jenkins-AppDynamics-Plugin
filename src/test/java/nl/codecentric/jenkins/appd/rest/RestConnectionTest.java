@@ -2,6 +2,9 @@ package nl.codecentric.jenkins.appd.rest;
 
 import static org.junit.Assert.*;
 import nl.codecentric.jenkins.appd.rest.types.MetricData;
+
+
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.junit.Test;
@@ -17,6 +20,7 @@ public class RestConnectionTest {
 
   private final String jsonOutput = "      [{\n" +
       "        \"frequency\": \"TEN_MIN\",\n" +
+      "        \"metricId\": 38357,\n" +
       "        \"metricPath\": \"Overall Application Performance|Average Response Time (ms)\",\n" +
       "        \"metricValues\": [\n" +
       "            {\n" +
@@ -38,8 +42,9 @@ public class RestConnectionTest {
 
   @Test
   public void testJsonParsing() throws IOException {
+      jsonMapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
-    List<MetricData> metricList = jsonMapper.readValue(jsonOutput, new TypeReference<List<MetricData>>() {});
+      List<MetricData> metricList = jsonMapper.readValue(jsonOutput, new TypeReference<List<MetricData>>() {});
 
     assertEquals(1, metricList.size());
     MetricData resultData = metricList.get(0);

@@ -23,6 +23,11 @@ public class MetricValues {
   private Integer min;
   private Long startTimeInMillis;
   private Integer value;
+  private Integer sum;
+  private Integer count;
+  private Double standardDeviation;
+  private Integer occurrences;
+  private Boolean useRange;
 
   public Integer getCurrent() {
     return current;
@@ -66,5 +71,45 @@ public class MetricValues {
 
   public void setValue(Integer value) {
     this.value = value;
+  }
+
+  public Integer getSum() {
+    return sum;
+  }
+
+  public void setSum(final Integer sum) {
+    this.sum = sum;
+  }
+
+  public Integer getCount() {
+    return count;
+  }
+
+  public void setCount(final Integer count) {
+    this.count = count;
+  }
+
+  public Double getStandardDeviation() {
+    return standardDeviation;
+  }
+
+  public void setStandardDeviation(final Double standardDeviation) {
+    this.standardDeviation = standardDeviation;
+  }
+
+  public Integer getOccurrences() {
+    return occurrences;
+  }
+
+  public void setOccurrences(final Integer occurrences) {
+    this.occurrences = occurrences;
+  }
+
+  public Boolean getUseRange() {
+    return useRange;
+  }
+
+  public void setUseRange(final Boolean useRange) {
+    this.useRange = useRange;
   }
 }

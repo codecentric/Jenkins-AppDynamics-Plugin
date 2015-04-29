@@ -8,6 +8,9 @@ import com.sun.jersey.client.apache.ApacheHttpClient;
 import com.sun.jersey.client.apache.config.DefaultApacheHttpClientConfig;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 import nl.codecentric.jenkins.appd.rest.types.MetricData;
+
+
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 
@@ -50,6 +53,7 @@ public class RestConnection {
     DefaultApacheHttpClientConfig config = new DefaultApacheHttpClientConfig();
     config.getState().setCredentials(null, null, -1, parsedUsername, password);
     config.getFeatures().put(JSONConfiguration.FEATURE_POJO_MAPPING, Boolean.TRUE);
+    jsonMapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     Client restClient = ApacheHttpClient.create(config);
     restClient.setFollowRedirects(true);
 

@@ -28,9 +28,27 @@ import java.util.List;
  */
 public class MetricData {
 
+  private String metricId;
+  private String metricName;
   private String frequency;
   private String metricPath;
   private List<MetricValues> metricValues = new ArrayList<MetricValues>();
+
+  public String getMetricId() {
+    return metricId;
+  }
+
+  public void setMetricId(final String metricId) {
+    this.metricId = metricId;
+  }
+
+  public String getMetricName() {
+    return metricName;
+  }
+
+  public void setMetricName(final String metricName) {
+    this.metricName = metricName;
+  }
 
   public String getFrequency() {
     return frequency;
